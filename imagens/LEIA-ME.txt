@@ -1,0 +1,51 @@
+ROLETA DE FOTOS — COMO ADICIONAR MAIS FOTOS
+============================================
+
+Pasta: C:\Users\henri\OneDrive\Desktop\japas house\imagens
+
+1) Coloque a foto nova aqui dentro com o nome seguindo a sequência:
+       roleta-1.jpg
+       roleta-2.jpg
+       ...
+       roleta-9.jpg
+       roleta-10.jpg
+       (sem pular número — a roleta para no primeiro número que faltar)
+
+2) Aceita os formatos .jpg, .jpeg, .png e .webp (a ordem de procura é essa).
+
+3) Dê F5 na página inicial. A foto aparece na roleta automaticamente.
+
+Observações:
+- Enquanto não houver mais fotos, o console do navegador pode mostrar
+  alguns "404" (é o site procurando o próximo número). É normal e
+  some assim que você colocar a foto nova.
+- A foto aparece inteira no cartão, sem corte: o quadro é em retrato e,
+  quando a foto não preenche o quadro, o fundo desfocado da própria foto
+  ocupa o espaço que sobra.
+
+COMO A ROLETA FUNCIONA
+----------------------
+- A roleta gira sozinha a cada 4,2 segundos.
+- O botão do meio (PAUSAR GIRO / RETOMAR GIRO) liga e desliga o giro.
+- As setinhas ‹ e › mudam a foto na mão.
+- Dá para arrastar as fotos com o mouse ou o dedo.
+- Passar o mouse em cima do palco da roleta também pausa o giro.
+- Clicar numa foto abre ela em tela cheia (fecha com o X ou com o Esc).
+
+LEGENDAS (OPCIONAL)
+-------------------
+No app.js, dentro da função initRoleta3D, existe a constante:
+
+    const LEGENDAS = [];
+
+Se você colocar um texto em cada posição, o texto aparece como título
+dentro do cartão (do jeito do modelo de referência). A ordem é a mesma
+dos arquivos:
+
+    const LEGENDAS = [
+        'Casamentos no Japa’s House',
+        'Salão Principal',
+        'Cozinha Aberta'
+    ];
+
+Para trocar a ordem das fotos, renomeie os arquivos (a roleta segue o número).

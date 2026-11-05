@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardápio — Japa's House Bistrô | Gastronomia Interativa</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Cinzel Decorative -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Cinzel:wght@500;700;800;900&family=Noto+Serif+JP:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'japa-black': '#090B10',
+                        'japa-dark': '#0E131F',
+                        'japa-card': '#141A29',
+                        'japa-red': '#E11D48',
+                        'japa-crimson': '#BE123C',
+                        'japa-gold': '#F59E0B',
+                        'japa-amber': '#D97706'
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        cinzel: ['Cinzel', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="bg-japa-black text-slate-100 antialiased selection:bg-japa-red selection:text-white">
+
+    <!-- Sakura Particle Canvas -->
+    <canvas id="sakuraCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-40"></canvas>
+
+    <!-- HEADER NAVBAR -->
+    <header class="fixed top-0 left-0 right-0 z-40 bg-japa-black/80 backdrop-blur-2xl border-b border-slate-800/60 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <a href="index.html" class="flex items-center gap-3 group">
+                <div class="relative w-11 h-11 rounded-full bg-slate-950 flex items-center justify-center p-1 border border-amber-500/30 group-hover:border-japa-red transition-all shadow-lg shadow-japa-red/10">
+                    <svg viewBox="0 0 500 500" class="w-full h-full">
+                        <circle cx="250" cy="250" r="240" fill="#111111"/>
+                        <path d="M 120 230 L 250 140 L 380 230 L 360 245 L 250 170 L 140 245 Z" fill="#FFFFFF"/>
+                        <rect x="180" y="160" width="18" height="30" fill="#FFFFFF"/>
+                        <text x="250" y="310" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="34" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">JAPA'S HOUSE</text>
+                        <text x="250" y="375" font-family="'Cinzel', serif" font-weight="900" font-size="48" fill="#E11D48" text-anchor="middle" letter-spacing="3">BISTRÔ</text>
+                    </svg>
+                </div>
+                <div>
+                    <span class="font-cinzel text-lg font-black tracking-wider text-white block group-hover:text-japa-red transition-colors">JAPA'S HOUSE</span>
+                    <span class="text-[10px] font-bold text-japa-gold tracking-widest uppercase block -mt-1">Bistrô & Gastrobar</span>
+                </div>
+            </a>
+
+            <!-- Navigation Links -->
+            <nav class="hidden lg:flex items-center space-x-8 text-xs font-bold uppercase tracking-wider text-slate-300">
+                <a href="index.html" class="hover:text-japa-red transition-colors py-2">Início</a>
+                <a href="#roleta" class="hover:text-japa-red transition-colors py-2">Cardápio</a>
+                <a href="#monte-temaki" class="hover:text-japa-red transition-colors py-2">Monte seu Temaki</a>
+                <a href="index.html#espaco" class="hover:text-japa-red transition-colors py-2">Nosso Espaço</a>
+                <a href="index.html#contato" class="hover:text-japa-red transition-colors py-2">Contato & Local</a>
+                <a href="index.html#reservas" class="hover:text-japa-red transition-colors py-2">Reservas</a>
+                <button onclick="checkAdminAccess()" class="relative hover:text-white transition-all py-2 text-japa-gold flex items-center gap-2 cursor-pointer bg-amber-500/20 hover:bg-amber-500/30 px-4 py-2 rounded-full border border-amber-500/40 shadow-lg shadow-amber-500/10 font-extrabold">
+                    <i class="fa-solid fa-key text-xs text-japa-gold"></i> Gestão Admin
+                    <span id="pendingOrdersBadge" class="hidden absolute -top-1.5 -right-1.5 px-2 py-0.5 rounded-full text-[10px] font-black bg-japa-red text-white shadow-lg animate-bounce">0</span>
+                </button>
+            </nav>
+
+            <!-- Mobile Menu Toggle -->
+            <button onclick="toggleMobileNav()" class="lg:hidden w-11 h-11 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 hover:text-white hover:border-japa-red flex items-center justify-center transition-all" aria-label="Abrir menu de navegação" aria-expanded="false">
+                <i class="fa-solid fa-bars" id="mobileNavIcon"></i>
+            </button>
+
+            <!-- Action Button -->
+            <a href="https://wa.me/5524998833667?text=Ol%C3%A1!%20Gostaria%20de%20fazer%20um%20pedido%20no%20Japa's%20House%20Bistr%C3%B4" target="_blank" class="hidden sm:flex px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-emerald-950/40 items-center gap-2 transition-all hover:scale-105">
+                <i class="fa-brands fa-whatsapp text-sm"></i> WhatsApp
+            </a>
+        </div>
+
+        <!-- Mobile Navigation Panel -->
+        <div id="mobileNav" class="hidden lg:hidden border-t border-slate-800 bg-japa-black/95 backdrop-blur-xl">
+            <nav class="px-4 py-4 flex flex-col gap-1 text-xs font-bold uppercase tracking-wider text-slate-300">
+                <a href="index.html" onclick="closeMobileNav()" class="py-2.5 px-3 rounded-xl hover:bg-slate-900 hover:text-japa-red transition-colors">Início</a>
+                <a href="#roleta" onclick="closeMobileNav()" class="py-2.5 px-3 rounded-xl hover:bg-slate-900 hover:text-japa-red transition-colors">Cardápio</a>
+                <a href="#monte-temaki" onclick="closeMobileNav()" class="py-2.5 px-3 rounded-xl hover:bg-slate-900 hover:text-japa-red transition-colors">Monte seu Temaki</a>
+                <a href="index.html#espaco" onclick="closeMobileNav()" class="py-2.5 px-3 rounded-xl hover:bg-slate-900 hover:text-japa-red transition-colors">Nosso Espaço</a>
+                <a href="index.html#contato" onclick="closeMobileNav()" class="py-2.5 px-3 rounded-xl hover:bg-slate-900 hover:text-japa-red transition-colors">Contato & Local</a>
+                <a href="index.html#reservas" onclick="closeMobileNav()" class="py-2.5 px-3 rounded-xl hover:bg-slate-900 hover:text-japa-red transition-colors">Reservas</a>
+                <button onclick="checkAdminAccess(); closeMobileNav();" class="mt-1 py-2.5 px-3 rounded-xl bg-amber-500/10 text-japa-gold border border-amber-500/30 text-left flex items-center gap-2">
+                    <i class="fa-solid fa-key"></i> Gestão Admin
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- SECTION: CARDÁPIO — Estilo Caderno Japonês -->
+    <section id="roleta" class="py-12 sm:py-16 lg:py-20 bg-japa-black border-t border-slate-800/80 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex justify-center">
+            <div class="menu-container">
+                <div class="sun-bg" aria-hidden="true"></div>
+
+                <div class="header">
+                    <h2>CARDÁPIO</h2>
+                    <div class="kanji-title">寿司・日本料理</div>
+                    <div class="subtitle">Japa's House Bistrô · Rio Claro/RJ</div>
+                </div>
+
+                <!-- Buscador do cardápio -->
+                <div class="menu-search">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input type="text" id="menuSearchInput" placeholder="Buscar prato, ingrediente..."
+                           oninput="onMenuSearch(this.value)" autocomplete="off" spellcheck="false"
+                           aria-label="Buscar no cardápio">
+                    <button type="button" id="menuSearchClear" class="menu-search-clear"
+                            onclick="clearMenuSearch()" aria-label="Limpar busca" hidden>&times;</button>
+                </div>
+
+                <!-- Abas de categorias -->
+                <div class="tabs-nav" id="tabsNav">
+                    <!-- Gerado no JavaScript -->
+                </div>
+
+                <!-- Lista de produtos com scroll interno -->
+                <div class="menu-page-wrap">
+                    <div class="scroll-fade-top" aria-hidden="true"></div>
+                    <div class="menu-page" id="menuList">
+                        <!-- Gerado no JavaScript -->
+                    </div>
+                    <div class="scroll-fade-bottom" aria-hidden="true"></div>
+                </div>
+
+                <!-- Rodapé estilo página de cardápio -->
+                <div class="menu-footer">
+                    <div id="itemCounter">0 ITENS</div>
+                    <div class="page-indicator">
+                        <div class="page-dots" id="pageDots"></div>
+                        <span id="pageText">PÁG. 1</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: MONTE SEU TEMAKI CUSTOMIZER -->
+    <section id="monte-temaki" class="py-20 bg-japa-dark/70 border-t border-slate-800/80 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <span class="text-xs font-extrabold text-japa-gold uppercase tracking-widest bg-amber-500/10 px-3.5 py-1.5 rounded-full border border-amber-500/20">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Personalização Exclusiva
+                    </span>
+                    <h2 class="font-cinzel text-3xl sm:text-4xl font-extrabold text-white mt-4">Monte seu Temaki Sob Medida</h2>
+                    <p class="text-slate-400 text-xs sm:text-sm mt-3 leading-relaxed">Combine recheios premium, crocância na medida e acompanhamentos exclusivos para criar seu Temaki único do Bistrô.</p>
+
+                    <div class="mt-8 space-y-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-300 tracking-wider mb-2">1. Escolha a Proteína Principal</label>
+                            <div class="grid grid-cols-3 gap-3" id="temakiProteinaOptions">
+                                <button onclick="selectTemakiOption('proteina', 'salmao', 28.00)" class="temaki-opt p-3 rounded-2xl bg-japa-card border border-slate-700/80 text-left hover:border-japa-red transition-all active border-japa-red">
+                                    <div class="text-xs font-bold text-white">Salmão Fresco</div>
+                                    <div class="text-[10px] text-japa-gold font-bold mt-1">R$ 28,00</div>
+                                </button>
+                                <button onclick="selectTemakiOption('proteina', 'camarao', 32.00)" class="temaki-opt p-3 rounded-2xl bg-japa-card border border-slate-700/80 text-left hover:border-japa-red transition-all">
+                                    <div class="text-xs font-bold text-white">Camarão Empanado</div>
+                                    <div class="text-[10px] text-japa-gold font-bold mt-1">R$ 32,00</div>
+                                </button>
+                                <button onclick="selectTemakiOption('proteina', 'shimeji', 26.00)" class="temaki-opt p-3 rounded-2xl bg-japa-card border border-slate-700/80 text-left hover:border-japa-red transition-all">
+                                    <div class="text-xs font-bold text-white">Shimeji na Manteiga</div>
+                                    <div class="text-[10px] text-japa-gold font-bold mt-1">R$ 26,00</div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-300 tracking-wider mb-2">2. Estilo de Preparo</label>
+                            <div class="grid grid-cols-3 gap-3" id="temakiEstiloOptions">
+                                <button onclick="selectTemakiOption('estilo', 'cru', 0)" class="temaki-opt p-3 rounded-2xl bg-japa-card border border-slate-700/80 text-left hover:border-japa-red transition-all active border-japa-red">
+                                    <div class="text-xs font-bold text-white">Tradicional Cru</div>
+                                    <div class="text-[10px] text-slate-400 font-bold mt-1">Incluso</div>
+                                </button>
+                                <button onclick="selectTemakiOption('estilo', 'flambado', 3.00)" class="temaki-opt p-3 rounded-2xl bg-japa-card border border-slate-700/80 text-left hover:border-japa-red transition-all">
+                                    <div class="text-xs font-bold text-white">Flambado no Maçarico</div>
+                                    <div class="text-[10px] text-japa-gold font-bold mt-1">+ R$ 3,00</div>
+                                </button>
+                                <button onclick="selectTemakiOption('estilo', 'hot', 5.00)" class="temaki-opt p-3 rounded-2xl bg-japa-card border border-slate-700/80 text-left hover:border-japa-red transition-all">
+                                    <div class="text-xs font-bold text-white">Hot Empanado</div>
+                                    <div class="text-[10px] text-japa-gold font-bold mt-1">+ R$ 5,00</div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Summary Box -->
+                <div class="bg-japa-card p-8 rounded-3xl border border-slate-800 shadow-2xl relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-japa-red/10 rounded-full blur-2xl"></div>
+                    
+                    <h3 class="font-cinzel text-xl font-bold text-white mb-6 border-b border-slate-800 pb-4">Resumo do seu Temaki</h3>
+
+                    <div class="space-y-4 text-xs">
+                        <div class="flex justify-between text-slate-300">
+                            <span>Base Proteica:</span>
+                            <span id="summaryProteina" class="font-bold text-white">Salmão Fresco</span>
+                        </div>
+                        <div class="flex justify-between text-slate-300">
+                            <span>Preparo:</span>
+                            <span id="summaryEstilo" class="font-bold text-white">Tradicional Cru</span>
+                        </div>
+                        <div class="flex justify-between text-slate-300">
+                            <span>Taxa de Entrega:</span>
+                            <span id="summaryDeliveryFee" class="font-bold text-japa-gold">Conforme o bairro</span>
+                        </div>
+                        <div class="flex justify-between text-slate-300">
+                            <span>Cream Cheese & Cebolinha:</span>
+                            <span class="font-bold text-emerald-400">Incluso</span>
+                        </div>
+                        <div class="pt-4 border-t border-slate-800 flex justify-between items-center">
+                            <span class="text-sm font-bold text-slate-200">Total Estimado:</span>
+                            <span id="summaryTotal" class="text-2xl font-extrabold text-japa-gold">R$ 28,00</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button onclick="addTemakiToCart()" class="py-3.5 rounded-2xl bg-gradient-to-r from-japa-crimson to-japa-red hover:from-japa-red hover:to-pink-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-japa-red/20 flex items-center justify-center gap-2 transition-all">
+                            <i class="fa-solid fa-cart-plus text-sm"></i> Adicionar ao Carrinho
+                        </button>
+                        <button onclick="orderCustomTemaki()" class="py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition-all">
+                            <i class="fa-brands fa-whatsapp text-base"></i> WhatsApp Direto
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-japa-black py-12 border-t border-slate-800/80 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col items-center justify-center space-y-4">
+            <div class="w-10 h-10 rounded-full bg-slate-950 flex items-center justify-center p-1 border border-slate-800">
+                <svg viewBox="0 0 500 500" class="w-full h-full">
+                    <circle cx="250" cy="250" r="240" fill="#111111"/>
+                    <path d="M 120 230 L 250 140 L 380 230 L 360 245 L 250 170 L 140 245 Z" fill="#FFFFFF"/>
+                    <rect x="180" y="160" width="18" height="30" fill="#FFFFFF"/>
+                    <text x="250" y="310" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="34" fill="#FFFFFF" text-anchor="middle">JAPA'S HOUSE</text>
+                    <text x="250" y="375" font-family="'Cinzel', serif" font-weight="900" font-size="48" fill="#E11D48" text-anchor="middle">BISTRÔ</text>
+                </svg>
+            </div>
+            <p class="font-bold text-slate-400">Japa's House Bistrô - Rio Claro / RJ</p>
+            <p>© 2026 Japa's House Bistrô. Todos os direitos reservados.</p>
+            <button onclick="checkAdminAccess()" class="text-amber-500 hover:underline text-[11px] font-semibold mt-2 flex items-center gap-1">
+                <i class="fa-solid fa-shield-halved"></i> Acessar Painel Administrativo / Gerência
+            </button>
+        </div>
+    </footer>
+
+    <!-- BOTÃO FLUTUANTE DO CARRINHO -->
+    <button onclick="openCart()" class="fixed bottom-6 left-6 z-40 bg-japa-red hover:bg-rose-600 text-white p-3.5 rounded-full shadow-2xl shadow-japa-red/30 flex items-center gap-2 transition-all hover:scale-110" title="Abrir Carrinho de Compras">
+        <i class="fa-solid fa-cart-shopping text-base"></i>
+        <span class="text-xs font-extrabold uppercase tracking-wider pr-1 hidden sm:inline">Carrinho</span>
+        <span id="cartBadge" class="hidden absolute -top-1.5 -right-1.5 px-2 py-0.5 rounded-full text-[10px] font-black bg-white text-japa-red shadow-lg">0</span>
+    </button>
+
+    <!-- MODAL DO CARRINHO & CHECKOUT -->
+    <div id="cartModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden items-center justify-center p-4" onclick="closeCart()">
+        <div onclick="event.stopPropagation()" class="bg-japa-dark border border-slate-700/80 max-w-lg w-full max-h-[92vh] rounded-3xl overflow-hidden shadow-2xl relative flex flex-col">
+            <!-- Cart Header -->
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-japa-card/80 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-japa-red/10 border border-japa-red/30 text-japa-red flex items-center justify-center">
+                        <i class="fa-solid fa-basket-shopping"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-cinzel text-lg font-extrabold text-white">Seu Carrinho</h3>
+                        <p class="text-[11px] text-slate-400 font-semibold">Preencha os dados e envie pelo WhatsApp</p>
+                    </div>
+                </div>
+                <button onclick="closeCart()" class="w-9 h-9 rounded-full bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Cart Items -->
+            <div id="cartItemsList" class="p-5 space-y-3 overflow-y-auto flex-1 min-h-[90px] shrink"></div>
+
+            <!-- Checkout Form -->
+            <form id="checkoutForm" onsubmit="handleCheckout(event)" class="border-t border-slate-800 p-5 space-y-3 overflow-y-auto max-h-[48vh] shrink-0">
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-japa-gold flex items-center gap-1.5">
+                    <i class="fa-solid fa-motorcycle"></i> Dados para Entrega
+                </h4>
+
+                <div class="grid sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Seu Nome *</label>
+                        <input type="text" id="cartName" required placeholder="Nome completo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:border-japa-red focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">WhatsApp *</label>
+                        <input type="tel" id="cartPhone" required placeholder="(24) 99999-9999" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:border-japa-red focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Rua e Número *</label>
+                    <input type="text" id="cartAddress" required placeholder="R. Pres. Vargas, 294" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:border-japa-red focus:outline-none">
+                </div>
+
+                <div class="grid sm:grid-cols-2 gap-3">
+                    <div id="districtField"></div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Complemento</label>
+                        <input type="text" id="cartComplement" placeholder="Apto / Bloco / Ponto de referência" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:border-japa-red focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Taxa de entrega definida pelo gerente (somente leitura) -->
+                <div class="flex items-center justify-between bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5">
+                    <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fa-solid fa-motorcycle text-japa-gold"></i> Taxa de Entrega
+                    </span>
+                    <span id="cartFeeInfo" class="text-xs font-extrabold text-emerald-400">A combinar</span>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Tipo de Pagamento *</label>
+                    <select id="cartPayment" required onchange="toggleChangeField()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:border-japa-red focus:outline-none">
+                        <option value="Pix">Pix</option>
+                        <option value="Cartão de Crédito">Cartão de Crédito</option>
+                        <option value="Cartão de Débito">Cartão de Débito</option>
+                        <option value="Dinheiro">Dinheiro</option>
+                    </select>
+                </div>
+
+                <div id="cartChangeWrap" class="hidden">
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Troco para (R$)</label>
+                    <input type="number" id="cartChangeFor" step="0.50" min="0" placeholder="Ex: 100.00" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:border-japa-red focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Observações</label>
+                    <textarea id="cartNotes" rows="2" placeholder="Ex: sem cebola, interfone quebrado, entregar na portaria..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:border-japa-red focus:outline-none leading-relaxed resize-none"></textarea>
+                </div>
+
+                <!-- Totals -->
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-2 text-xs">
+                    <div class="flex justify-between text-slate-400">
+                        <span>Subtotal dos itens:</span>
+                        <span id="cartSubtotal" class="font-bold text-slate-200">R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400">
+                        <span>Taxa de Entrega:</span>
+                        <span id="cartFeeValue" class="font-bold text-emerald-400">A combinar</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-800">
+                        <span class="text-xs font-bold text-slate-200 uppercase tracking-wider">Total do Pedido:</span>
+                        <span id="cartTotal" class="text-xl font-extrabold text-japa-gold">R$ 0,00</span>
+                    </div>
+                </div>
+
+                <p id="cartEmptyHint" class="text-[11px] text-rose-400 font-semibold text-center">Adicione itens ao carrinho para finalizar.</p>
+
+                <button id="cartCheckoutBtn" type="submit" disabled class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-bag-shopping text-base"></i> Fazer Pedido
+                </button>
+                <p class="text-[10px] text-slate-500 text-center leading-relaxed">O pedido será enviado para <span class="text-slate-400 font-bold">+55 (24) 99883-3667</span> e registrado na Central de Pedidos do gerente.</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE LOGIN / AUTENTICAÇÃO DO ADMINISTRADOR -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700/80 max-w-md w-full rounded-3xl overflow-hidden shadow-2xl relative p-6 sm:p-8">
+            <button onclick="closeAdminLoginModal()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition-all">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 rounded-full bg-japa-red/10 border border-japa-red/30 text-japa-red flex items-center justify-center mx-auto mb-3 text-lg">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h3 class="font-cinzel text-xl font-bold text-white">Acesso do Gerente</h3>
+                <p class="text-xs text-slate-400 mt-1">Informe a senha de administrador para gerenciar o cardápio e os pedidos.</p>
+            </div>
+
+            <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">PIN / Senha Admin</label>
+                    <input type="password" id="adminPasswordInput" required placeholder="Digite a senha (padrão: 1234)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 text-xs focus:border-japa-red focus:outline-none tracking-widest text-center text-sm font-bold">
+                    <p id="loginErrorMsg" class="text-[11px] text-rose-500 mt-2 font-semibold hidden text-center">Senha incorreta! Tente novamente.</p>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-japa-crimson to-japa-red hover:from-japa-red hover:to-pink-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-japa-red/20 transition-all">
+                        Acessar Gestão
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP: PAINEL ADMINISTRATIVO COMPLETO -->
+    <div id="adminPanelModal" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex items-center justify-center p-4 sm:p-6 hidden overflow-y-auto">
+        <div class="bg-japa-dark border border-slate-700/80 max-w-5xl w-full max-h-[90vh] rounded-3xl overflow-hidden shadow-2xl relative flex flex-col my-auto">
+            <!-- Modal Header -->
+            <div class="p-6 border-b border-slate-800 flex items-center justify-between bg-japa-card/80">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-cinzel text-lg font-extrabold text-white">Painel de Gestão Admin</h3>
+                        <p class="text-[11px] text-emerald-400 font-semibold flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Modo Administrador Ativo
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="openProductFormModal()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-japa-crimson to-japa-red hover:from-japa-red hover:to-pink-600 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2">
+                        <i class="fa-solid fa-plus text-xs"></i> Novo Produto
+                    </button>
+                    <button onclick="logoutAdmin()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-300 font-bold text-xs uppercase tracking-wider transition-all" title="Sair da Gestão">
+                        <i class="fa-solid fa-right-from-bracket"></i> Sair
+                    </button>
+                    <button onclick="closeAdminPanelModal()" class="w-9 h-9 rounded-full bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition-all">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Admin Tab Selector: Cardápio, Pedidos e Taxas de Entrega -->
+            <div class="flex border-b border-slate-800 bg-slate-950 px-6 overflow-x-auto">
+                <button id="adminTabCardapio" onclick="switchAdminTab('cardapio')" class="px-5 py-3 border-b-2 border-japa-red text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-utensils"></i> Gestão do Cardápio
+                </button>
+                <button id="adminTabPedidos" onclick="switchAdminTab('pedidos')" class="px-5 py-3 border-b-2 border-transparent text-slate-400 hover:text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 relative whitespace-nowrap">
+                    <i class="fa-solid fa-receipt"></i> Central de Pedidos Recebidos
+                    <span id="tabPendingBadge" class="hidden px-2 py-0.5 rounded-full text-[10px] font-black bg-japa-red text-white">0</span>
+                </button>
+                <button id="adminTabEntrega" onclick="switchAdminTab('entrega')" class="px-5 py-3 border-b-2 border-transparent text-slate-400 hover:text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 relative whitespace-nowrap">
+                    <i class="fa-solid fa-motorcycle"></i> Taxas por Bairro
+                    <span id="tabZonesBadge" class="hidden px-2 py-0.5 rounded-full text-[10px] font-black bg-japa-gold text-slate-950">0</span>
+                </button>
+            </div>
+
+            <!-- TAB 1: GESTÃO DO CARDÁPIO & CONFIGURAÇÕES -->
+            <div id="adminTabContentCardapio" class="p-6 overflow-y-auto space-y-6 flex-1 custom-scroll">
+                <!-- Administrative Settings Toolbar -->
+                <div class="grid md:grid-cols-2 gap-4 bg-japa-card p-4 sm:p-5 rounded-2xl border border-slate-800">
+                    <div class="flex items-center justify-between gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                        <div>
+                            <span class="text-xs font-bold text-white block"><i class="fa-solid fa-motorcycle text-japa-gold mr-1"></i> Taxas de Entrega</span>
+                            <span class="text-[10px] text-slate-400">Os valores são definidos por bairro, sem taxa padrão.</span>
+                        </div>
+                        <button onclick="switchAdminTab('entrega')" class="px-3.5 py-1.5 rounded-lg bg-japa-red hover:bg-rose-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-md whitespace-nowrap">
+                            <i class="fa-solid fa-map-location-dot"></i> Gerenciar
+                        </button>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                        <div>
+                            <span class="text-xs font-bold text-white block"><i class="fa-brands fa-whatsapp text-emerald-400 mr-1"></i> Confirmar Pedido WhatsApp</span>
+                            <span class="text-[10px] text-slate-400">Envie mensagem rápida ao cliente.</span>
+                        </div>
+                        <button onclick="sendQuickWhatsAppConfirmation()" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md">
+                            <i class="fa-solid fa-paper-plane"></i> Confirmar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search & Filters -->
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-japa-card p-4 rounded-2xl border border-slate-800">
+                    <div class="flex flex-wrap items-center gap-2" id="adminCategoryFilters">
+                        <button onclick="filterAdminCategory('todos', this)" class="admin-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-japa-red text-white transition-all">Todos</button>
+                        <button onclick="filterAdminCategory('aperitivos', this)" class="admin-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all">Aperitivos</button>
+                        <button onclick="filterAdminCategory('temaki', this)" class="admin-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all">Temakis</button>
+                        <button onclick="filterAdminCategory('makimono', this)" class="admin-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all">Makimonos</button>
+                        <button onclick="filterAdminCategory('sashimi', this)" class="admin-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all">Sashimis</button>
+                        <button onclick="filterAdminCategory('light', this)" class="admin-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all">S. Light</button>
+                        <button onclick="filterAdminCategory('sushi', this)" class="admin-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all">Sushis</button>
+                        <button onclick="filterAdminCategory('combinados', this)" class="admin-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all">Combinados</button>
+                        <button onclick="filterAdminCategory('carnes', this)" class="admin-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all">Carnes</button>
+                        <button onclick="filterAdminCategory('porcoes', this)" class="admin-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all">Porções</button>
+                        <button onclick="filterAdminCategory('burgers', this)" class="admin-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all">Burgers</button>
+                        <button onclick="filterAdminCategory('drinks', this)" class="admin-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all">Drinks</button>
+                    </div>
+
+                    <div class="relative w-full sm:w-64">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="adminSearchInput" onkeyup="searchAdminProducts()" placeholder="Buscar prato..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-slate-200 text-xs focus:border-japa-red focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Products Grid -->
+                <div id="adminProductsGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Dynamically rendered admin items -->
+                </div>
+            </div>
+
+            <!-- TAB 2: CENTRAL DE PEDIDOS RECEBIDOS -->
+            <div id="adminTabContentPedidos" class="p-6 overflow-y-auto space-y-4 flex-1 custom-scroll hidden">
+                <div class="flex items-center justify-between bg-japa-card p-4 rounded-2xl border border-slate-800">
+                    <div>
+                        <h4 class="font-bold text-white text-sm">Lista de Pedidos Efetuados</h4>
+                        <p class="text-xs text-slate-400">Ao mudar o status para <span class="text-white font-bold">Em Preparo</span> ou <span class="text-white font-bold">A Caminho</span>, uma mensagem é enviada automaticamente ao cliente. Use 🖨️ para imprimir a comanda.</p>
+                        <label class="flex items-center gap-2 text-[11px] text-slate-300 font-bold cursor-pointer select-none mt-2">
+                            <input type="checkbox" id="autoPrintCheckbox" onchange="toggleAutoPrint(this.checked)" class="w-4 h-4 accent-rose-600">
+                            🖨️ Imprimir a comanda automaticamente ao entrar em Preparo
+                        </label>
+                    </div>
+                    <button onclick="clearCompletedOrders()" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs flex items-center gap-1.5">
+                        <i class="fa-solid fa-broom"></i> Limpar Concluídos
+                    </button>
+                </div>
+
+                <div id="adminOrdersList" class="space-y-3">
+                    <!-- Dynamically rendered incoming orders -->
+                </div>
+            </div>
+
+            <!-- TAB 3: TAXAS DE ENTREGA POR BAIRRO -->
+            <div id="adminTabContentEntrega" class="p-6 overflow-y-auto space-y-6 flex-1 custom-scroll hidden">
+                <div class="bg-japa-card p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <div>
+                        <h4 class="font-bold text-white text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-motorcycle text-japa-gold"></i> Taxas de Entrega por Bairro
+                        </h4>
+                        <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                            Cadastre os bairros atendidos e o valor da entrega em cada um. No carrinho, o cliente escolhe o bairro e a taxa é aplicada automaticamente no total.
+                        </p>
+                    </div>
+
+                    <div class="grid sm:grid-cols-[1fr_140px_auto] gap-3 items-end bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Nome do Bairro</label>
+                            <input type="text" id="newZoneName" placeholder="Ex: Vila Velha" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:border-japa-red focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Taxa (R$)</label>
+                            <input type="number" id="newZoneFee" step="0.50" min="0" placeholder="7.00" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-japa-gold focus:border-japa-red focus:outline-none">
+                        </div>
+                        <button onclick="addDeliveryZone()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-japa-crimson to-japa-red hover:from-japa-red hover:to-pink-600 text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all">
+                            <i class="fa-solid fa-plus mr-1"></i> Adicionar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="adminZonesList" class="space-y-3">
+                    <!-- Dynamically rendered delivery zones -->
+                </div>
+
+                <p class="text-[11px] text-slate-500 leading-relaxed">
+                    <i class="fa-solid fa-circle-info text-slate-400 mr-1"></i>
+                    <span class="text-slate-400 font-bold">Não existe taxa padrão.</span> Somente os bairros cadastrados aqui têm valor definido; para bairros não listados, a entrega fica <span class="text-slate-400 font-bold">a combinar</span> com o cliente.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CADASTRO / EDIÇÃO DE PRODUTOS -->
+    <div id="productFormModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[60] flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700/80 max-w-lg w-full rounded-3xl overflow-hidden shadow-2xl relative p-6 sm:p-8">
+            <button onclick="closeProductFormModal()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition-all">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h3 id="formModalTitle" class="font-cinzel text-xl font-bold text-white mb-1">Cadastrar Novo Produto</h3>
+            <p class="text-xs text-slate-400 mb-6">Preencha os campos para atualizar o cardápio.</p>
+
+            <form id="productForm" onsubmit="handleProductFormSubmit(event)" class="space-y-4">
+                <input type="hidden" id="formProductId" value="">
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">Nome do Produto</label>
+                    <input type="text" id="formProductName" required placeholder="Ex: Combinado Especial Flambado" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 text-xs focus:border-japa-red focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">Preço (R$)</label>
+                        <input type="number" step="0.50" id="formProductPrice" required placeholder="49.90" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 text-xs font-bold text-japa-gold focus:border-japa-red focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">Categoria</label>
+                        <select id="formProductCategory" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 text-xs focus:border-japa-red focus:outline-none">
+                            <option value="aperitivos">Aperitivos</option>
+                            <option value="temaki">Temakis</option>
+                            <option value="makimono">Makimonos</option>
+                            <option value="sashimi">Sashimis</option>
+                            <option value="light">Salmão Light</option>
+                            <option value="sushi">Sushis</option>
+                            <option value="combinados">Combinados</option>
+                            <option value="carnes">Carnes</option>
+                            <option value="porcoes">Porções & Petiscos</option>
+                            <option value="burgers">Burgers Artesanais</option>
+                            <option value="drinks">Drinks & Chopp</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">Selo / Tag</label>
+                        <input type="text" id="formProductBadge" placeholder="Ex: Mais Pedido" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 text-xs focus:border-japa-red focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">URL da Imagem</label>
+                        <input type="url" id="formProductImg" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 text-xs focus:border-japa-red focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">Descrição Detalhada do Prato</label>
+                    <textarea id="formProductDesc" rows="3" required placeholder="Descreva os ingredientes e diferenciais..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 text-xs focus:border-japa-red focus:outline-none leading-relaxed"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="closeProductFormModal()" class="px-5 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs uppercase tracking-wider">Cancelar</button>
+                    <button type="submit" class="px-6 py-2 rounded-xl bg-japa-red hover:bg-rose-600 text-white font-bold text-xs uppercase tracking-wider">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         PAINEL COZINHA / BALCÃO — tela cheia (abre por checkAdminAccess)
+         ══════════════════════════════════════════════════════════ -->
+    <div id="kitchenPanelModal" class="fixed inset-0 bg-[#0d0f14] z-[55] hidden flex-col overflow-y-auto">
+
+        <!-- ── Top Bar ── -->
+        <header class="bg-[#111318] border-b border-slate-800 px-4 sm:px-6 h-14 flex items-center justify-between shrink-0 sticky top-0 z-10">
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-slate-900 border border-amber-500/40 flex items-center justify-center p-1">
+                    <svg viewBox="0 0 500 500" class="w-full h-full">
+                        <circle cx="250" cy="250" r="240" fill="#111111"/>
+                        <path d="M 120 230 L 250 140 L 380 230 L 360 245 L 250 170 L 140 245 Z" fill="#FFFFFF"/>
+                        <rect x="180" y="160" width="18" height="30" fill="#FFFFFF"/>
+                        <text x="250" y="310" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="34" fill="#FFFFFF" text-anchor="middle">JAPA'S HOUSE</text>
+                        <text x="250" y="375" font-family="'Cinzel', serif" font-weight="900" font-size="48" fill="#E11D48" text-anchor="middle">BISTRÔ</text>
+                    </svg>
+                </div>
+                <div>
+                    <span class="font-bold text-white text-sm leading-tight block">ADMIN PANEL</span>
+                    <span class="text-[10px] text-japa-red font-extrabold tracking-wider uppercase leading-tight block">Japa's House — Gestão</span>
+                </div>
+            </div>
+
+            <!-- Center Nav Tabs -->
+            <nav class="hidden sm:flex items-center gap-1 bg-slate-900/70 border border-slate-800 rounded-full px-1.5 py-1 min-w-0 max-w-full overflow-x-auto">
+                <button onclick="switchKitchenTab('cozinha')" id="kitchenTabCozinhaBtn"
+                    class="kitchen-tab-btn shrink-0 whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all bg-japa-red text-white flex items-center gap-1.5">
+                    🍽️ Pedidos Cozinha / Balcão
+                </button>
+                <button onclick="switchKitchenTab('cardapio')" id="kitchenTabCardapioBtn"
+                    class="kitchen-tab-btn shrink-0 whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all text-slate-300 hover:text-white flex items-center gap-1.5">
+                    📋 Cardápio
+                </button>
+                <button onclick="switchKitchenTab('entrega')" id="kitchenTabEntregaBtn"
+                    class="kitchen-tab-btn shrink-0 whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all text-slate-300 hover:text-white flex items-center gap-1.5">
+                    🛵 Entrega
+                </button>
+                <button onclick="switchKitchenTab('fechamento')" id="kitchenTabFechamentoBtn"
+                    class="kitchen-tab-btn shrink-0 whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all text-slate-300 hover:text-white flex items-center gap-1.5">
+                    💰 Fechamento
+                </button>
+            </nav>
+
+            <!-- Right Actions -->
+            <div class="flex items-center gap-2">
+                <a href="index.html" onclick="closeKitchenPanel()" class="hidden sm:flex text-xs font-bold text-slate-300 hover:text-white items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-slate-800 transition-all">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Ver Site
+                </a>
+                <button onclick="logoutKitchen()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 font-bold text-xs flex items-center gap-1.5 transition-all border border-slate-700">
+                    <i class="fa-solid fa-right-from-bracket text-xs"></i> <span class="hidden sm:inline">Sair</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- ── Main Content ── -->
+        <main class="flex-1 px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-screen-2xl mx-auto w-full">
+
+            <!-- ─── TAB: COZINHA / BALCÃO ─── -->
+            <div id="kitchenTabCozinha">
+
+                <!-- Pedidos da Cozinha & Balcão -->
+                <div class="bg-[#111318] border border-slate-800 rounded-2xl p-5 space-y-4">
+                    <!-- Section Header -->
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-lg">📦</span>
+                                <h2 class="font-bold text-white text-base">Pedidos da Cozinha & Balcão</h2>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse">● Ao Vivo</span>
+                            </div>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Os pedidos feitos pelos clientes chegam aqui em tempo real para impressão e acompanhamento.</p>
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <label class="flex items-center gap-2 cursor-pointer select-none">
+                                <input type="checkbox" id="kitchenAutoPrintCheck" onchange="toggleKitchenAutoPrint(this.checked)" class="w-4 h-4 accent-rose-600 rounded">
+                                <span class="text-[11px] font-bold text-slate-300">🖨️ Imprimir automaticamente ao chegar</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer select-none">
+                                <input type="checkbox" id="kitchenSoundCheck" onchange="toggleKitchenSound(this.checked)" checked class="w-4 h-4 accent-amber-400 rounded">
+                                <span class="text-[11px] font-bold text-slate-300">🔔 Som de alerta</span>
+                            </label>
+                            <button onclick="refreshKitchenOrders()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition-all">
+                                <i class="fa-solid fa-rotate-right text-xs"></i> Atualizar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter Tabs -->
+                    <div class="flex items-center gap-2 flex-wrap border-b border-slate-800 pb-3" id="kitchenOrderFilterBtns">
+                        <button onclick="filterKitchenOrders('todos', this)" class="kitchen-order-filter px-4 py-2 rounded-lg text-xs font-bold transition-all bg-japa-red text-white">Todos (0)</button>
+                        <button onclick="filterKitchenOrders('Pendente', this)" class="kitchen-order-filter px-4 py-2 rounded-lg text-xs font-bold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700">Novos (0)</button>
+                        <button onclick="filterKitchenOrders('Em Preparo', this)" class="kitchen-order-filter px-4 py-2 rounded-lg text-xs font-bold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700">Em Preparo (0)</button>
+                        <button onclick="filterKitchenOrders('A Caminho', this)" class="kitchen-order-filter px-4 py-2 rounded-lg text-xs font-bold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700">Em Entrega (0)</button>
+                        <button onclick="filterKitchenOrders('Concluído', this)" class="kitchen-order-filter px-4 py-2 rounded-lg text-xs font-bold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700">Concluídos (0)</button>
+                        <button onclick="filterKitchenOrders('Cancelado', this)" class="kitchen-order-filter px-4 py-2 rounded-lg text-xs font-bold transition-all bg-slate-800 text-slate-300 hover:bg-slate-700">Cancelados (0)</button>
+                    </div>
+
+                    <!-- Orders List -->
+                    <div id="kitchenOrdersList" class="space-y-3 min-h-[280px]">
+                        <!-- Dynamically rendered -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ─── TAB: CARDÁPIO (mirrors admin panel) ─── -->
+            <div id="kitchenTabCardapioContent" class="hidden">
+                <div class="bg-[#111318] border border-slate-800 rounded-2xl p-5 space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <h2 class="font-bold text-white text-base flex items-center gap-2">📋 Gestão do Cardápio</h2>
+                        <button onclick="openProductFormModal()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-japa-crimson to-japa-red text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-plus text-xs"></i> Novo Produto
+                        </button>
+                    </div>
+
+                    <!-- Filters + Search -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                        <div class="flex flex-wrap gap-2" id="kitchenCatFilters">
+                            <button onclick="filterKitchenCategory('todos', this)" class="kitchen-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-japa-red text-white transition-all">Todos</button>
+                            <button onclick="filterKitchenCategory('aperitivos', this)" class="kitchen-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all">Aperitivos</button>
+                            <button onclick="filterKitchenCategory('temaki', this)" class="kitchen-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all">Temakis</button>
+                            <button onclick="filterKitchenCategory('makimono', this)" class="kitchen-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all">Makimonos</button>
+                            <button onclick="filterKitchenCategory('sashimi', this)" class="kitchen-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all">Sashimis</button>
+                            <button onclick="filterKitchenCategory('light', this)" class="kitchen-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all">S. Light</button>
+                            <button onclick="filterKitchenCategory('sushi', this)" class="kitchen-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all">Sushis</button>
+                            <button onclick="filterKitchenCategory('combinados', this)" class="kitchen-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all">Combinados</button>
+                            <button onclick="filterKitchenCategory('carnes', this)" class="kitchen-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all">Carnes</button>
+                            <button onclick="filterKitchenCategory('porcoes', this)" class="kitchen-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all">Porções</button>
+                            <button onclick="filterKitchenCategory('burgers', this)" class="kitchen-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all">Burgers</button>
+                            <button onclick="filterKitchenCategory('drinks', this)" class="kitchen-cat-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all">Drinks</button>
+                        </div>
+                        <div class="relative w-full sm:w-64">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input type="text" id="kitchenSearchInput" onkeyup="renderKitchenProducts()" placeholder="Buscar prato..."
+                                class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-slate-200 text-xs focus:border-japa-red focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div id="kitchenProductsGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <!-- Dynamically rendered -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ─── TAB: ENTREGA ─── -->
+            <div id="kitchenTabEntregaContent" class="hidden">
+                <div class="bg-[#111318] border border-slate-800 rounded-2xl p-5 space-y-5">
+                    <h2 class="font-bold text-white text-base flex items-center gap-2">🛵 Taxas de Entrega por Bairro</h2>
+                    <p class="text-xs text-slate-400">Cadastre os bairros atendidos e o valor da entrega de cada um. No carrinho do cliente, a taxa é aplicada automaticamente.</p>
+
+                    <div class="grid sm:grid-cols-[1fr_140px_auto] gap-3 items-end bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Nome do Bairro</label>
+                            <input type="text" id="kitchenNewZoneName" placeholder="Ex: Vila Velha" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:border-japa-red focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Taxa (R$)</label>
+                            <input type="number" id="kitchenNewZoneFee" step="0.50" min="0" placeholder="7.00" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-japa-gold focus:border-japa-red focus:outline-none">
+                        </div>
+                        <button onclick="addKitchenDeliveryZone()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-japa-crimson to-japa-red hover:from-japa-red hover:to-pink-600 text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all">
+                            <i class="fa-solid fa-plus mr-1"></i> Adicionar
+                        </button>
+                    </div>
+
+                    <div id="kitchenZonesList" class="space-y-3">
+                        <!-- Dynamically rendered -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ─── TAB: FECHAMENTO DO DIA ─── -->
+            <div id="kitchenTabFechamentoContent" class="hidden">
+                <div class="bg-[#111318] border border-slate-800 rounded-2xl p-5 space-y-4">
+                    <!-- Row 1: Title + Loja Aberta/Fechada -->
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-lg">💰</span>
+                                <h2 class="font-bold text-white text-base">Fechamento do dia</h2>
+                                <span id="kitchenDateStamp" class="text-xs text-slate-400 font-semibold"></span>
+                            </div>
+                            <p class="text-[11px] text-slate-500 mt-0.5">Pedidos de hoje (cancelados não entram).</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span id="kitchenOrderCountBadge" class="text-xs font-bold text-slate-400">0 pedidos hoje</span>
+                            <button onclick="setStoreOpen(false)" id="btnLojaFechada"
+                                class="px-4 py-2 rounded-lg text-xs font-extrabold uppercase tracking-wider transition-all bg-rose-700 text-white border border-rose-600 shadow-md">
+                                ● LOJA FECHADA
+                            </button>
+                            <button onclick="setStoreOpen(true)" id="btnLojaAberta"
+                                class="px-4 py-2 rounded-lg text-xs font-extrabold uppercase tracking-wider transition-all bg-emerald-700/40 text-emerald-300 border border-emerald-700/50 hover:bg-emerald-700 hover:text-white shadow-md">
+                                🟢 ABRIR LOJA
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-center">
+                            <div id="statVendasTotais" class="text-xl font-extrabold text-japa-gold">R$ 0,00</div>
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Vendas Totais</div>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-center">
+                            <div id="statCartao" class="text-xl font-extrabold text-cyan-400">R$ 0,00</div>
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Cartão</div>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-center">
+                            <div id="statPix" class="text-xl font-extrabold text-emerald-400">R$ 0,00</div>
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Pix</div>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-center">
+                            <div id="statDinheiro" class="text-xl font-extrabold text-lime-400">R$ 0,00</div>
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Dinheiro</div>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-center col-span-2 sm:col-span-1">
+                            <div id="statDelivery" class="text-xl font-extrabold text-purple-400">R$ 0,00</div>
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">A Receber do Delivery</div>
+                        </div>
+                    </div>
+
+                    <p class="text-[11px] text-slate-500 leading-relaxed">
+                        <i class="fa-solid fa-circle-info text-slate-400 mr-1"></i>
+                        Os valores são calculados com os pedidos de <span class="text-slate-300 font-bold">hoje</span>. Use a aba <span class="text-slate-300 font-bold">🍽️ Pedidos</span> para acompanhar e imprimir cada um.
+                    </p>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- ── Footer ── -->
+        <footer class="text-center py-4 text-[11px] text-slate-600 border-t border-slate-800/60 shrink-0">
+            Japa's House — Painel Administrativo •
+            <a href="index.html" onclick="closeKitchenPanel()" class="text-japa-red hover:underline ml-1">Ver site público</a>
+        </footer>
+    </div>
+    <!-- ══════ FIM PAINEL COZINHA ══════ -->
+
+    <!-- SCRIPT APPLICATION LOGIC -->
+    <!-- Toast de confirmação -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="./app.js" defer></script>
+</body>
+</html>
