@@ -809,6 +809,11 @@ const STORAGE_KEY = 'japa_house_bistr_rio_claro_v1';
 const CFG = (typeof window !== 'undefined' && window.JAPA) ? window.JAPA : {};
 const WA_PHONE = (CFG.business && CFG.business.phone) || '5524998833667';
 
+// Base da API: vazio = mesma origem. Definida em config.js (api.apiBase)
+// para o caso de o site estar em um endereço e o backend em outro.
+const API_BASE = String((CFG.api && CFG.api.apiBase) || '').replace(/\/+$/, '');
+function apiUrl(caminho) { return API_BASE + caminho; }
+
 function saveState() {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -1158,7 +1163,7 @@ function handleAdminLogin(e) {
     if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Verificando...'; }
     if (errEl) errEl.classList.add('hidden');
 
-    fetch('/api/admin/login', {
+    fetch(apiUrl('/api/admin/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: 'admin', password: pass })
@@ -1249,7 +1254,7 @@ function handleChangePassword(e) {
 
     if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Salvando...'; }
 
-    fetch('/api/admin/change-password', {
+    fetch(apiUrl('/api/admin/change-password'), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -1342,7 +1347,7 @@ function normalizarPedidoServidor(o) {
 async function apiCarregarPedidos() {
     if (!adminToken) return null;
     try {
-        const r = await fetch('/api/orders', { headers: apiCabecalhoAuth() });
+        const r = await fetch(apiUrl('/api/orders'), { headers: apiCabecalhoAuth() });
         if (r.status === 401) { sessaoPainelExpirada(); return null; }
         if (!r.ok) return null;
         const lista = await r.json();
@@ -1366,7 +1371,7 @@ async function sincronizarPedidos() {
 async function apiAtualizarStatusPedido(id, status) {
     if (!adminToken) return false;
     try {
-        const r = await fetch('/api/orders/' + id + '/status', {
+        const r = await fetch(apiUrl('/api/orders/') + id + '/status', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', ...apiCabecalhoAuth() },
             body: JSON.stringify({ status })
@@ -1379,7 +1384,7 @@ async function apiAtualizarStatusPedido(id, status) {
 async function apiLimparPedidosConcluidos() {
     if (!adminToken) return false;
     try {
-        const r = await fetch('/api/orders/completed', { method: 'DELETE', headers: apiCabecalhoAuth() });
+        const r = await fetch(apiUrl('/api/orders/completed'), { method: 'DELETE', headers: apiCabecalhoAuth() });
         return r.ok;
     } catch (e) { return false; }
 }
@@ -1459,7 +1464,7 @@ function pararTimerMesa() {
 
 async function carregarMesasDoSalao() {
     try {
-        const r = await fetch('/api/tables');
+        const r = await fetch(apiUrl('/api/tables'));
         if (!r.ok) return;
         const lista = await r.json();
         mesasDoSalao = Array.isArray(lista) ? lista : [];
@@ -1657,7 +1662,7 @@ async function removerItemMesa(indice) {
     const guardado = { nome: item.nome, obs: item.obs || '', qtd: Number(item.qtd) || 1 };
 
     try {
-        const r = await fetch('/api/commands/table/' + mesaEstado.mesaId + '/itens/' + indice, {
+        const r = await fetch(apiUrl('/api/commands/table/') + mesaEstado.mesaId + '/itens/' + indice, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ codigo: mesaEstado.codigo })
@@ -1706,7 +1711,7 @@ async function desfazerRemocaoMesa() {
     if (barra) { barra.classList.add('hidden'); barra.innerHTML = ''; }
 
     try {
-        const r = await fetch('/api/commands/table/' + mesaEstado.mesaId, {
+        const r = await fetch(apiUrl('/api/commands/table/') + mesaEstado.mesaId, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1727,7 +1732,7 @@ async function desfazerRemocaoMesa() {
 async function chamarGarcomMesa() {
     if (mesaEstado.mesaId === null || !mesaEstado.codigo) return;
     try {
-        const r = await fetch('/api/commands/table/' + mesaEstado.mesaId + '/garcom', {
+        const r = await fetch(apiUrl('/api/commands/table/') + mesaEstado.mesaId + '/garcom', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ codigo: mesaEstado.codigo })
@@ -1774,7 +1779,7 @@ async function abrirComandaDaMesa() {
     }
 
     try {
-        const r = await fetch('/api/commands/table/' + mesaEstado.mesaId + '?codigo=' + encodeURIComponent(codigo));
+        const r = await fetch(apiUrl('/api/commands/table/') + mesaEstado.mesaId + '?codigo=' + encodeURIComponent(codigo));
         const d = await r.json().catch(() => ({}));
         if (!r.ok) {
             const mensagem = d.error || 'Código inválido.';
@@ -1806,7 +1811,7 @@ async function abrirComandaDaMesa() {
 async function carregarComandaMesa() {
     if (mesaEstado.mesaId === null || !mesaEstado.codigo) return;
     try {
-        const r = await fetch('/api/commands/table/' + mesaEstado.mesaId + '?codigo=' + encodeURIComponent(mesaEstado.codigo));
+        const r = await fetch(apiUrl('/api/commands/table/') + mesaEstado.mesaId + '?codigo=' + encodeURIComponent(mesaEstado.codigo));
         if (!r.ok) return;
         const d = await r.json();
         mesaEstado.comanda = d.comanda || null;
@@ -1817,7 +1822,7 @@ async function carregarComandaMesa() {
 async function adicionarPratoMesa(nome) {
     if (mesaEstado.mesaId === null || !mesaEstado.codigo) return;
     try {
-        const r = await fetch('/api/commands/table/' + mesaEstado.mesaId, {
+        const r = await fetch(apiUrl('/api/commands/table/') + mesaEstado.mesaId, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ codigo: mesaEstado.codigo, itens: [{ nome: nome, qtd: 1 }] })
@@ -1860,7 +1865,7 @@ let mesasAdmin = [];
 async function apiCarregarComandas() {
     if (!adminToken) return null;
     try {
-        const r = await fetch('/api/commands/open', { headers: apiCabecalhoAuth() });
+        const r = await fetch(apiUrl('/api/commands/open'), { headers: apiCabecalhoAuth() });
         if (r.status === 401) { sessaoPainelExpirada(); return null; }
         if (!r.ok) return null;
         const lista = await r.json();
@@ -1973,7 +1978,7 @@ function renderComandasCozinha() {
 async function atenderChamadaGarcom(comandaId) {
     if (!adminToken) return;
     try {
-        const r = await fetch('/api/commands/' + comandaId, {
+        const r = await fetch(apiUrl('/api/commands/') + comandaId, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', ...apiCabecalhoAuth() },
             body: JSON.stringify({ garcomAtendido: true })
@@ -1991,7 +1996,7 @@ async function atenderChamadaGarcom(comandaId) {
 async function atualizarItemComanda(comandaId, indice, status) {
     if (!adminToken) return;
     try {
-        const r = await fetch('/api/commands/' + comandaId, {
+        const r = await fetch(apiUrl('/api/commands/') + comandaId, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', ...apiCabecalhoAuth() },
             body: JSON.stringify({ itens: [{ indice: indice, status: status }] })
@@ -2009,7 +2014,7 @@ async function atualizarItemComanda(comandaId, indice, status) {
 async function fecharComandaDaMesa(comandaId) {
     if (!confirm('Fechar a conta desta mesa? O pedido entra no painel de pedidos.')) return;
     try {
-        const r = await fetch('/api/commands/' + comandaId + '/close', {
+        const r = await fetch(apiUrl('/api/commands/') + comandaId + '/close', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', ...apiCabecalhoAuth() },
             body: JSON.stringify({})
@@ -2031,7 +2036,7 @@ async function fecharComandaDaMesa(comandaId) {
 async function apiCarregarMesasAdmin() {
     if (!adminToken) return null;
     try {
-        const r = await fetch('/api/tables/admin', { headers: apiCabecalhoAuth() });
+        const r = await fetch(apiUrl('/api/tables/admin'), { headers: apiCabecalhoAuth() });
         if (r.status === 401) { sessaoPainelExpirada(); return null; }
         if (!r.ok) return null;
         const lista = await r.json();
@@ -2088,7 +2093,7 @@ async function salvarMesaAdmin(id) {
     const nome = String(input.value || '').trim();
     if (nome.length < 2) return;
     try {
-        await fetch('/api/tables/' + id, {
+        await fetch(apiUrl('/api/tables/') + id, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', ...apiCabecalhoAuth() },
             body: JSON.stringify({ name: nome })
@@ -2100,7 +2105,7 @@ async function salvarMesaAdmin(id) {
 
 async function alternarMesaAdmin(id, ativo) {
     try {
-        const r = await fetch('/api/tables/' + id, {
+        const r = await fetch(apiUrl('/api/tables/') + id, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', ...apiCabecalhoAuth() },
             body: JSON.stringify({ active: !!ativo })
@@ -2114,7 +2119,7 @@ async function alternarMesaAdmin(id, ativo) {
 async function novoCodigoMesaAdmin(id) {
     if (!confirm('Gerar um novo código para esta mesa? Quem já tinha o código antigo precisa usar o novo.')) return;
     try {
-        const r = await fetch('/api/tables/' + id, {
+        const r = await fetch(apiUrl('/api/tables/') + id, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', ...apiCabecalhoAuth() },
             body: JSON.stringify({ novoCodigo: true })
@@ -2129,7 +2134,7 @@ async function novoCodigoMesaAdmin(id) {
 async function excluirMesaAdmin(id) {
     if (!confirm('Remover esta mesa do salão?')) return;
     try {
-        const r = await fetch('/api/tables/' + id, {
+        const r = await fetch(apiUrl('/api/tables/') + id, {
             method: 'DELETE',
             headers: apiCabecalhoAuth()
         });
@@ -2145,7 +2150,7 @@ async function criarMesaAdmin() {
     const lugares = Number((document.getElementById('novaMesaLugares') || {}).value) || 4;
     if (nome.length < 2) { showToast('Dê um nome para a mesa.'); return; }
     try {
-        const r = await fetch('/api/tables', {
+        const r = await fetch(apiUrl('/api/tables'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', ...apiCabecalhoAuth() },
             body: JSON.stringify({ name: nome, seats: lugares })
@@ -3152,7 +3157,7 @@ function statusLojaManual() {
 
 // Busca o status da loja no servidor — é o que faz a pausa valer para TODOS os clientes
 function _apiGetStoreStatus() {
-    return fetch('/api/config/store-status', { headers: { 'Accept': 'application/json' } })
+    return fetch(apiUrl('/api/config/store-status'), { headers: { 'Accept': 'application/json' } })
         .then(r => (r.ok ? r.json() : null))
         .then(data => {
             if (!data) return;
@@ -3274,7 +3279,7 @@ function handleCheckout(e) {
 
     // Grava o pedido no servidor: o painel do gerente passa a listar o que
     // chegou pelo site. O preço é recalculado lá — o site só sugere.
-    fetch('/api/orders', {
+    fetch(apiUrl('/api/orders'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -3588,7 +3593,7 @@ function _apiSetStoreStatus(status) {
     if (!adminToken) return;
     // reflete na hora na tela; o servidor confirma em seguida
     statusLojaServidor = status;
-    fetch('/api/config/store-status', {
+    fetch(apiUrl('/api/config/store-status'), {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',

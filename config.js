@@ -119,6 +119,22 @@ window.JAPA = {
   },
 
   /* ---------------------------------------------------------------- *
+   * BACKEND (API) — pedidos, comandas, mesas e painel
+   * ---------------------------------------------------------------- */
+  api: {
+    /* Endereço do backend que guarda pedidos, comandas e mesas.
+     *
+     * Vazio = mesma origem do site (site e backend no mesmo endereço).
+     * Preencha com a URL completa quando o site estiver em outro lugar
+     * (ex.: site no GitHub Pages e backend no Render):
+     *     apiBase: 'https://japas-house.onrender.com'
+     *
+     * Sem isso, o site ainda funciona: os pedidos seguem pelo WhatsApp e o
+     * cardápio fica salvo no próprio navegador do cliente. */
+    apiBase: ''
+  },
+
+  /* ---------------------------------------------------------------- *
    * MENSAGEM PADRÃO DE BOAS-VINDAS NO WHATSAPP
    * ---------------------------------------------------------------- */
   whatsapp: {
