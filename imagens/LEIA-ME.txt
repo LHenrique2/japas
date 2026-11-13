@@ -1,7 +1,7 @@
 ROLETA DE FOTOS — COMO ADICIONAR MAIS FOTOS
 ============================================
 
-Pasta: C:\Users\henri\OneDrive\Desktop\japas house\imagens
+Pasta: C:\Users\henri\OneDrive\Desktop\japas-main\imagens
 
 1) Coloque a foto nova aqui dentro com o nome seguindo a sequência:
        roleta-1.jpg
@@ -49,3 +49,28 @@ dos arquivos:
     ];
 
 Para trocar a ordem das fotos, renomeie os arquivos (a roleta segue o número).
+
+FOTOS DOS PRATOS (CARDÁPIO)
+--------------------------
+Pasta: imagens\pratos
+
+Aqui ficam as fotos dos pratos do cardápio. Hoje são 10 fotos geradas
+(placeholder) e as demais ainda usam imagens genéricas do Unsplash.
+
+1) Para trocar a foto de um prato, existem duas formas:
+   - troque o arquivo de mesmo nome em imagens\pratos (ex.:
+     prato-harumaki-de-camarao.jpg), ou
+   - no app.js, no item do prato, troque o valor de "img:" pelo caminho
+     da foto nova (ex.: img: 'imagens/pratos/meu-prato.jpg').
+
+2) A foto do prato é a fonte de verdade no código: mesmo quem já visitou o
+   site antes vê a foto nova (o que ficou salvo no navegador é atualizado
+   sozinho, sem precisar limpar nada).
+
+3) Se alguma foto não carregar, aparece o desenho "FOTO EM BREVE"
+   (imagens\placeholder-prato.svg) no lugar dela — nunca um espaço vazio
+   ou o ícone de imagem quebrada.
+
+4) Para cadastrar um prato novo no cardápio, use o painel do gerente
+   (Acessar Painel Administrativo) e cadastre o item lá. O item novo
+   nasce sem foto e já aparece com o "FOTO EM BREVE".

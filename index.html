@@ -68,6 +68,9 @@
                 <a href="#inicio" class="hover:text-japa-red transition-colors py-2">Início</a>
                 <a href="cardapio.html" class="hover:text-japa-red transition-colors py-2">Cardápio</a>
                 <a href="cardapio.html#monte-temaki" class="hover:text-japa-red transition-colors py-2">Monte seu Temaki</a>
+                <button onclick="abrirComandaMesa()" class="hover:text-japa-red transition-colors py-2 flex items-center gap-1.5">
+                    <i class="fa-solid fa-chair text-[10px]"></i> Comanda na Mesa
+                </button>
                 <a href="#espaco" class="hover:text-japa-red transition-colors py-2">Nosso Espaço</a>
                 <a href="#contato" class="hover:text-japa-red transition-colors py-2">Contato & Local</a>
                 <a href="#reservas" class="hover:text-japa-red transition-colors py-2">Reservas</a>
@@ -94,6 +97,9 @@
                 <a href="#inicio" onclick="closeMobileNav()" class="py-2.5 px-3 rounded-xl hover:bg-slate-900 hover:text-japa-red transition-colors">Início</a>
                 <a href="cardapio.html" onclick="closeMobileNav()" class="py-2.5 px-3 rounded-xl hover:bg-slate-900 hover:text-japa-red transition-colors">Cardápio</a>
                 <a href="cardapio.html#monte-temaki" onclick="closeMobileNav()" class="py-2.5 px-3 rounded-xl hover:bg-slate-900 hover:text-japa-red transition-colors">Monte seu Temaki</a>
+                <button onclick="abrirComandaMesa(); closeMobileNav();" class="py-2.5 px-3 rounded-xl hover:bg-slate-900 hover:text-japa-red transition-colors text-left flex items-center gap-2">
+                    <i class="fa-solid fa-chair"></i> Comanda na Mesa
+                </button>
                 <a href="#espaco" onclick="closeMobileNav()" class="py-2.5 px-3 rounded-xl hover:bg-slate-900 hover:text-japa-red transition-colors">Nosso Espaço</a>
                 <a href="#contato" onclick="closeMobileNav()" class="py-2.5 px-3 rounded-xl hover:bg-slate-900 hover:text-japa-red transition-colors">Contato & Local</a>
                 <a href="#reservas" onclick="closeMobileNav()" class="py-2.5 px-3 rounded-xl hover:bg-slate-900 hover:text-japa-red transition-colors">Reservas</a>
@@ -190,7 +196,7 @@
     </section>
 
     <!-- LIGHTBOX DA ROLETA — abre a foto em tela cheia -->
-    <div class="roleta-lightbox" id="roletaLightbox" hidden>
+    <div class="roleta-lightbox" id="roletaLightbox" role="dialog" aria-modal="true" aria-label="Foto ampliada" hidden>
         <button type="button" class="roleta-lightbox-close" id="roletaLightboxClose" aria-label="Fechar imagem">✕</button>
         <img id="roletaLightboxImg" src="" alt="Foto do Japa's House Bistrô ampliada">
     </div>
@@ -372,7 +378,7 @@
     </button>
 
     <!-- MODAL DO CARRINHO & CHECKOUT -->
-    <div id="cartModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden items-center justify-center p-4" onclick="closeCart()">
+    <div id="cartModal" role="dialog" aria-modal="true" aria-label="Carrinho de compras" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden items-center justify-center p-4" onclick="closeCart()">
         <div onclick="event.stopPropagation()" class="bg-japa-dark border border-slate-700/80 max-w-lg w-full max-h-[92vh] rounded-3xl overflow-hidden shadow-2xl relative flex flex-col">
             <!-- Cart Header -->
             <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-japa-card/80 shrink-0">
@@ -480,7 +486,7 @@
     </div>
 
     <!-- MODAL DE LOGIN / AUTENTICAÇÃO DO ADMINISTRADOR -->
-    <div id="adminLoginModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div id="adminLoginModal" role="dialog" aria-modal="true" aria-label="Acesso do gerente" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-700/80 max-w-md w-full rounded-3xl overflow-hidden shadow-2xl relative p-6 sm:p-8">
             <button onclick="closeAdminLoginModal()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition-all">
                 <i class="fa-solid fa-xmark"></i>
@@ -502,7 +508,7 @@
                 </div>
 
                 <div class="pt-2">
-                    <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-japa-crimson to-japa-red hover:from-japa-red hover:to-pink-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-japa-red/20 transition-all">
+                    <button type="submit" id="adminLoginBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-japa-crimson to-japa-red hover:from-japa-red hover:to-pink-600 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-japa-red/20 transition-all">
                         Acessar Gestão
                     </button>
                 </div>
@@ -510,8 +516,48 @@
         </div>
     </div>
 
+    <!-- MODAL: TROCAR SENHA ADMIN -->
+    <div id="changePasswordModal" role="dialog" aria-modal="true" aria-label="Trocar senha" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[60] flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700/80 max-w-sm w-full rounded-3xl overflow-hidden shadow-2xl relative p-6 sm:p-8">
+            <button onclick="closeChangePasswordModal()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition-all">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto mb-3 text-lg">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <h3 class="font-cinzel text-xl font-bold text-white">Trocar Senha</h3>
+                <p class="text-xs text-slate-400 mt-1">Informe a senha atual e escolha uma nova.</p>
+            </div>
+
+            <form onsubmit="handleChangePassword(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">Senha Atual</label>
+                    <input type="password" id="cpOldPass" required placeholder="Sua senha atual" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 text-sm focus:border-amber-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">Nova Senha</label>
+                    <input type="password" id="cpNewPass" required placeholder="Mínimo 4 caracteres" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 text-sm focus:border-amber-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">Confirmar Nova Senha</label>
+                    <input type="password" id="cpConfPass" required placeholder="Repita a nova senha" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 text-sm focus:border-amber-500 focus:outline-none">
+                </div>
+
+                <p id="cpMsg" class="text-xs mt-2 hidden text-center"></p>
+
+                <div class="pt-2">
+                    <button type="submit" id="cpSubmitBtn" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-yellow-400 text-white font-bold text-xs uppercase tracking-wider shadow-lg transition-all">
+                        Salvar Nova Senha
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL POPUP: PAINEL ADMINISTRATIVO COMPLETO -->
-    <div id="adminPanelModal" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex items-center justify-center p-4 sm:p-6 hidden overflow-y-auto">
+    <div id="adminPanelModal" role="dialog" aria-modal="true" aria-label="Painel de gestão" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-50 flex items-center justify-center p-4 sm:p-6 hidden overflow-y-auto">
         <div class="bg-japa-dark border border-slate-700/80 max-w-5xl w-full max-h-[90vh] rounded-3xl overflow-hidden shadow-2xl relative flex flex-col my-auto">
             <!-- Modal Header -->
             <div class="p-6 border-b border-slate-800 flex items-center justify-between bg-japa-card/80">
@@ -530,6 +576,9 @@
                 <div class="flex items-center gap-3">
                     <button onclick="openProductFormModal()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-japa-crimson to-japa-red hover:from-japa-red hover:to-pink-600 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center gap-2">
                         <i class="fa-solid fa-plus text-xs"></i> Novo Produto
+                    </button>
+                    <button onclick="openChangePasswordModal()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs uppercase tracking-wider transition-all" title="Trocar senha">
+                        <i class="fa-solid fa-key"></i> Senha
                     </button>
                     <button onclick="logoutAdmin()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-300 font-bold text-xs uppercase tracking-wider transition-all" title="Sair da Gestão">
                         <i class="fa-solid fa-right-from-bracket"></i> Sair
@@ -670,7 +719,7 @@
     </div>
 
     <!-- MODAL DE CADASTRO / EDIÇÃO DE PRODUTOS -->
-    <div id="productFormModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[60] flex items-center justify-center p-4 hidden">
+    <div id="productFormModal" role="dialog" aria-modal="true" aria-label="Cadastro de produto" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[60] flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-700/80 max-w-lg w-full rounded-3xl overflow-hidden shadow-2xl relative p-6 sm:p-8">
             <button onclick="closeProductFormModal()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition-all">
                 <i class="fa-solid fa-xmark"></i>
@@ -737,7 +786,7 @@
     <!-- ══════════════════════════════════════════════════════════
          PAINEL COZINHA / BALCÃO — tela cheia (abre por checkAdminAccess)
          ══════════════════════════════════════════════════════════ -->
-    <div id="kitchenPanelModal" class="fixed inset-0 bg-[#0d0f14] z-[55] hidden flex-col overflow-y-auto">
+    <div id="kitchenPanelModal" role="dialog" aria-modal="true" aria-label="Painel da cozinha e balcão" class="fixed inset-0 bg-[#0d0f14] z-[55] hidden flex-col overflow-y-auto">
 
         <!-- ── Top Bar ── -->
         <header class="bg-[#111318] border-b border-slate-800 px-4 sm:px-6 h-14 flex items-center justify-between shrink-0 sticky top-0 z-10">
@@ -772,6 +821,10 @@
                     class="kitchen-tab-btn shrink-0 whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all text-slate-300 hover:text-white flex items-center gap-1.5">
                     🛵 Entrega
                 </button>
+                <button onclick="switchKitchenTab('mesas')" id="kitchenTabMesasBtn"
+                    class="kitchen-tab-btn shrink-0 whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all text-slate-300 hover:text-white flex items-center gap-1.5">
+                    🪑 Mesas
+                </button>
                 <button onclick="switchKitchenTab('fechamento')" id="kitchenTabFechamentoBtn"
                     class="kitchen-tab-btn shrink-0 whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all text-slate-300 hover:text-white flex items-center gap-1.5">
                     💰 Fechamento
@@ -783,8 +836,12 @@
                 <a href="#inicio" onclick="closeKitchenPanel()" class="hidden sm:flex text-xs font-bold text-slate-300 hover:text-white items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-slate-800 transition-all">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Ver Site
                 </a>
+                <button onclick="openChangePasswordModal()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold text-xs flex items-center gap-1.5 transition-all border border-slate-700" title="Trocar senha">
+                    <i class="fa-solid fa-key text-xs"></i> <span class="hidden sm:inline">Senha</span>
+                </button>
                 <button onclick="logoutKitchen()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 font-bold text-xs flex items-center gap-1.5 transition-all border border-slate-700">
                     <i class="fa-solid fa-right-from-bracket text-xs"></i> <span class="hidden sm:inline">Sair</span>
+                </button>
                 </button>
             </div>
         </header>
@@ -818,7 +875,7 @@
                                 <input type="checkbox" id="kitchenSoundCheck" onchange="toggleKitchenSound(this.checked)" checked class="w-4 h-4 accent-amber-400 rounded">
                                 <span class="text-[11px] font-bold text-slate-300">🔔 Som de alerta</span>
                             </label>
-                            <button onclick="refreshKitchenOrders()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition-all">
+                            <button onclick="atualizarPainelCozinha()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1.5 transition-all">
                                 <i class="fa-solid fa-rotate-right text-xs"></i> Atualizar
                             </button>
                         </div>
@@ -906,6 +963,43 @@
                 </div>
             </div>
 
+            <!-- ─── TAB: MESAS DO SALÃO ─── -->
+            <div id="kitchenTabMesasContent" class="hidden">
+                <div class="bg-[#111318] border border-slate-800 rounded-2xl p-5 space-y-5">
+                    <div>
+                        <h2 class="font-bold text-white text-base flex items-center gap-2">🪑 Mesas do Salão</h2>
+                        <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                            Cada mesa tem um código de 4 letras. É esse código que o cliente digita no site para abrir a comanda —
+                            sem ele, ninguém consegue pedir para aquela mesa. Imprima o código na mesa e deixe à vista.
+                        </p>
+                    </div>
+
+                    <div class="grid sm:grid-cols-[1fr_120px_auto] gap-3 items-end bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Nome da Mesa</label>
+                            <input type="text" id="novaMesaNome" placeholder="Ex: Mesa 9" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:border-japa-red focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Lugares</label>
+                            <input type="number" id="novaMesaLugares" value="4" min="1" max="30" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-japa-gold focus:border-japa-red focus:outline-none">
+                        </div>
+                        <button onclick="criarMesaAdmin()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-japa-crimson to-japa-red hover:from-japa-red hover:to-pink-600 text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all">
+                            <i class="fa-solid fa-plus mr-1"></i> Criar Mesa
+                        </button>
+                    </div>
+
+                    <div id="adminMesasList" class="space-y-3">
+                        <!-- Dynamically rendered -->
+                    </div>
+
+                    <p class="text-[11px] text-slate-500 leading-relaxed">
+                        <i class="fa-solid fa-circle-info text-slate-400 mr-1"></i>
+                        O link <span class="text-slate-400 font-bold">?mesa=N&amp;codigo=ABCD</span> abre a comanda direto na mesa —
+                        dá para imprimir um QR code por mesa com esse endereço.
+                    </p>
+                </div>
+            </div>
+
             <!-- ─── TAB: FECHAMENTO DO DIA ─── -->
             <div id="kitchenTabFechamentoContent" class="hidden">
                 <div class="bg-[#111318] border border-slate-800 rounded-2xl p-5 space-y-4">
@@ -982,1394 +1076,7 @@
     <!-- Toast de confirmação -->
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+    <script src="./config.js"></script>
     <script src="./app.js" defer></script>
-    <!-- Bloco legado desativado; a aplicação executa a partir de app.js. -->
-    <script type="text/plain" aria-hidden="true">
-        let dishData = [
-            {
-                id: 1,
-                name: 'Combinado House Salmão Premium',
-                category: 'sushi',
-                price: 89.90,
-                badge: 'Mais Pedido',
-                img: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=800&q=80',
-                desc: '24 peças selecionadas: Sashimis de salmão, Joes flambados com geleia de pimenta, Uramakis e Hot Rolls crocantes.'
-            },
-            {
-                id: 2,
-                name: 'Sushi Dog Hot Crocante 20cm',
-                category: 'sushi',
-                price: 34.90,
-                badge: 'Especialidade',
-                img: 'https://images.unsplash.com/photo-1611143669185-af224c5e3252?auto=format&fit=crop&w=800&q=80',
-                desc: 'O famoso Hot Dog de sushi: empanado super crocante recheado com salmão batido, cream cheese, cebolhinha e molho tarê.'
-            },
-            {
-                id: 3,
-                name: 'Porção Batata Cheddar & Bacon',
-                category: 'porcoes',
-                price: 38.00,
-                badge: 'Petisco Bistrô',
-                img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=800&q=80',
-                desc: 'Batatas palito douradas e crocantes, cobertas com cheddar cremoso e bastante bacon artesanal crocante.'
-            },
-            {
-                id: 4,
-                name: 'Burger Bistrô Artesanal 180g',
-                category: 'burgers',
-                price: 36.90,
-                badge: 'Gastrobar',
-                img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80',
-                desc: 'Blend bovino da casa 180g grelhado no fogo, queijo cheddar derretido, bacon, maionese especial no pão brioche macio.'
-            },
-            {
-                id: 5,
-                name: 'Joe Flambado com Geleia de Pimenta',
-                category: 'sushi',
-                price: 28.00,
-                badge: 'Destaque',
-                img: 'https://images.unsplash.com/photo-1553621042-f6e147245754?auto=format&fit=crop&w=800&q=80',
-                desc: '6 unidades de lâminas de salmão envoltas em cream cheese, maçaricados e finalizados com geleia de pimenta artesanal.'
-            },
-            {
-                id: 6,
-                name: 'Drink Gin Tônica Lichia & Morango',
-                category: 'drinks',
-                price: 26.90,
-                badge: 'Cocktail',
-                img: 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80',
-                desc: 'Gin artesanal premium, água tônica, xarope natural de lichia, pedaços de morango fresco e um toque de alecrim.'
-            }
-        ];
-
-        // Global State for Admin Orders Ledger
-        let adminOrders = [
-            {
-                id: 101,
-                customer: 'Cliente Exemplo (Demo)',
-                items: '1x Combinado House Salmão Premium',
-                deliveryFee: 0,
-                deliveryFeeLabel: 'A combinar',
-                total: 89.90,
-                status: 'Pendente',
-                time: '19:42'
-            }
-        ];
-
-        let filteredDishes = [...dishData];
-        let currentCategoryFilter = 'todos';
-        let currentAdminCategoryFilter = 'todos';
-        let isAutoSpinning = true;
-        let autoSpinInterval = null;
-        let currentAngle = 0;
-        let isAdminLoggedIn = false;
-
-        let selectedProteinaPrice = 28.00;
-        let selectedProteinaName = 'Salmão Fresco';
-        let selectedEstiloPrice = 0.00;
-        let selectedEstiloName = 'Tradicional Cru';
-
-        // ===== ESTADO DO CARRINHO E PERSISTÊNCIA =====
-        let cart = [];
-        let orderSeq = 100;
-        let deliveryZones = []; // [{ id, name, fee }] — bairros e suas taxas de entrega
-        let autoPrintOnPrep = false; // imprime a comanda automaticamente ao entrar em Preparo
-        const STORAGE_KEY = 'japa_house_bistr_rio_claro_v1';
-
-        function saveState() {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                    dishData: dishData,
-                    adminOrders: adminOrders,
-                    orderSeq: orderSeq,
-                    deliveryZones: deliveryZones,
-                    autoPrintOnPrep: autoPrintOnPrep,
-                    cart: cart
-                }));
-            } catch (e) { /* localStorage indisponível (modo privado) */ }
-        }
-
-        function loadState() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) return;
-                const s = JSON.parse(raw);
-                if (Array.isArray(s.dishData)) dishData = s.dishData;
-                if (Array.isArray(s.adminOrders)) adminOrders = s.adminOrders;
-                if (typeof s.orderSeq === 'number') orderSeq = s.orderSeq;
-                if (Array.isArray(s.deliveryZones)) deliveryZones = s.deliveryZones;
-                if (typeof s.autoPrintOnPrep === 'boolean') autoPrintOnPrep = s.autoPrintOnPrep;
-                if (Array.isArray(s.cart)) cart = s.cart;
-            } catch (e) { /* estado corrompido: mantém padrão */ }
-        }
-
-        // Escapa HTML para evitar XSS ao renderizar dados de usuário
-        function esc(value) {
-            return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-            }[c]));
-        }
-
-        // Recalcula a lista pública respeitando o filtro de categoria ativo
-        function refreshPublicMenu() {
-            filteredDishes = (currentCategoryFilter === 'todos')
-                ? [...dishData]
-                : dishData.filter(d => d.category === currentCategoryFilter);
-            renderRouletteCards();
-            saveState();
-        }
-
-        // Alterna o destaque dos botões de filtro sem usar o `event` global
-        function setActiveFilter(selector, activeBtn, activeClasses, inactiveClasses) {
-            document.querySelectorAll(selector).forEach(btn => {
-                btn.classList.remove(...activeClasses);
-                btn.classList.add(...inactiveClasses);
-            });
-            if (activeBtn) {
-                activeBtn.classList.remove(...inactiveClasses);
-                activeBtn.classList.add(...activeClasses);
-            }
-        }
-
-        // Sakura Particle Canvas
-        function initSakura() {
-            const canvas = document.getElementById('sakuraCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            let width = canvas.width = window.innerWidth;
-            let height = canvas.height = window.innerHeight;
-
-            window.addEventListener('resize', () => {
-                width = canvas.width = window.innerWidth;
-                height = canvas.height = window.innerHeight;
-            });
-
-            const petals = Array.from({ length: 30 }, () => ({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                size: Math.random() * 6 + 4,
-                speedX: Math.random() * 1 - 0.5,
-                speedY: Math.random() * 1.5 + 0.5,
-                opacity: Math.random() * 0.5 + 0.3,
-                rotation: Math.random() * 360
-            }));
-
-            function drawSakura() {
-                ctx.clearRect(0, 0, width, height);
-                petals.forEach(p => {
-                    ctx.save();
-                    ctx.translate(p.x, p.y);
-                    ctx.rotate((p.rotation * Math.PI) / 180);
-                    ctx.fillStyle = `rgba(225, 29, 72, ${p.opacity})`;
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, p.size, p.size / 2, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.restore();
-
-                    p.x += p.speedX;
-                    p.y += p.speedY;
-                    p.rotation += 0.5;
-
-                    if (p.y > height) {
-                        p.y = -10;
-                        p.x = Math.random() * width;
-                    }
-                    if (p.x > width) p.x = 0;
-                    if (p.x < 0) p.x = width;
-                });
-                requestAnimationFrame(drawSakura);
-            }
-            drawSakura();
-        }
-
-        function renderRouletteCards() {
-            const track = document.getElementById('rouletteTrack');
-            if (!track) return;
-
-            if (filteredDishes.length === 0) {
-                track.innerHTML = `<div class="text-slate-400 text-xs text-center w-full py-12">Nenhum produto cadastrado nesta categoria.</div>`;
-                return;
-            }
-
-            const total = filteredDishes.length;
-            const angleStep = 360 / Math.max(total, 1);
-            const radius = Math.min(window.innerWidth < 640 ? 270 : 380, total * 60);
-
-            track.innerHTML = filteredDishes.map((dish, idx) => {
-                const angle = idx * angleStep;
-                const safePrice = Number(dish.price) || 0;
-                return `
-                    <div onclick="openDishModal(${dish.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDishModal(${dish.id})}" tabindex="0" role="button" aria-label="Ver detalhes de ${esc(dish.name)}" class="roulette-card absolute left-1/2 top-1/2 -ml-32 -mt-44 sm:-ml-36 sm:-mt-48 w-64 sm:w-72 bg-japa-card/95 rounded-3xl border border-slate-800 p-4 flex flex-col justify-between shadow-2xl transition-all duration-300 hover:border-japa-red cursor-pointer group"
-                         style="transform: rotateY(${angle}deg) translateZ(${radius}px);">
-                        <div class="relative h-36 rounded-2xl overflow-hidden mb-3 bg-slate-950">
-                            <img src="${esc(dish.img)}" alt="${esc(dish.name)}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                            <span class="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-japa-red text-white shadow-md">
-                                ${esc(dish.badge || dish.category)}
-                            </span>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-white text-sm truncate group-hover:text-japa-red transition-colors">${esc(dish.name)}</h3>
-                            <p class="text-slate-400 text-xs line-clamp-2 mt-1 leading-relaxed">${esc(dish.desc)}</p>
-                        </div>
-                        <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
-                            <div>
-                                <span class="text-[10px] text-slate-500 uppercase block font-semibold">Valor</span>
-                                <span class="text-sm font-extrabold text-japa-gold">R$ ${safePrice.toFixed(2)}</span>
-                            </div>
-                            <span class="px-3.5 py-1.5 rounded-xl bg-japa-red/20 hover:bg-japa-red text-japa-red hover:text-white font-bold text-xs transition-colors flex items-center gap-1.5">
-                                <i class="fa-solid fa-eye"></i> Ver
-                            </span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            updateTrackTransform();
-        }
-
-        function updateTrackTransform() {
-            const track = document.getElementById('rouletteTrack');
-            if (!track) return;
-            track.style.transform = `rotateY(${currentAngle}deg)`;
-
-            // Esconde/desativa os cards que estão com a "costa" virada para o usuário
-            const cards = track.querySelectorAll('.roulette-card');
-            const step = 360 / Math.max(filteredDishes.length, 1);
-            cards.forEach((card, i) => {
-                const totalAngle = ((i * step + currentAngle) % 360 + 360) % 360;
-                const facing = Math.cos(totalAngle * Math.PI / 180); // 1 = frente, -1 = verso
-                card.style.pointerEvents = facing > 0 ? 'auto' : 'none';
-                card.style.zIndex = facing > 0 ? '10' : '0';
-                card.style.opacity = facing > 0 ? Math.max(0.4, facing).toFixed(2) : '0.12';
-            });
-        }
-
-        function rotateRoulette(direction) {
-            const step = 360 / Math.max(filteredDishes.length, 1);
-            currentAngle += direction * step;
-            updateTrackTransform();
-        }
-
-        function toggleAutoSpin() {
-            isAutoSpinning = !isAutoSpinning;
-            const btn = document.getElementById('autoSpinBtn');
-            if (isAutoSpinning) {
-                btn.innerHTML = '<i class="fa-solid fa-pause"></i> Pausar Giro';
-                startAutoSpin();
-            } else {
-                btn.innerHTML = '<i class="fa-solid fa-play"></i> Giro Automático';
-                clearInterval(autoSpinInterval);
-            }
-        }
-
-        function startAutoSpin() {
-            clearInterval(autoSpinInterval);
-            autoSpinInterval = setInterval(() => {
-                if (isAutoSpinning) {
-                    currentAngle -= 0.4;
-                    updateTrackTransform();
-                }
-            }, 30);
-        }
-
-        function filterCategory(category, btn) {
-            currentCategoryFilter = category;
-            filteredDishes = (category === 'todos') ? [...dishData] : dishData.filter(d => d.category === category);
-
-            setActiveFilter('.cat-filter-btn', btn, ['bg-japa-red', 'text-white'], ['bg-slate-800/80', 'text-slate-300']);
-
-            currentAngle = 0;
-            renderRouletteCards();
-        }
-
-        function checkAdminAccess() {
-            if (isAdminLoggedIn) {
-                document.getElementById('adminPanelModal').classList.remove('hidden');
-                renderAdminProducts();
-                renderAdminOrders();
-                renderAdminZones();
-            } else {
-                document.getElementById('adminLoginModal').classList.remove('hidden');
-            }
-        }
-
-        function closeAdminLoginModal() {
-            document.getElementById('adminLoginModal').classList.add('hidden');
-            document.getElementById('loginErrorMsg').classList.add('hidden');
-        }
-
-        function handleAdminLogin(e) {
-            e.preventDefault();
-            const pass = document.getElementById('adminPasswordInput').value;
-            if (pass === '1234' || pass === 'admin') {
-                isAdminLoggedIn = true;
-                closeAdminLoginModal();
-                document.getElementById('adminPasswordInput').value = '';
-                document.getElementById('adminPanelModal').classList.remove('hidden');
-                renderAdminProducts();
-                renderAdminOrders();
-                renderAdminZones();
-            } else {
-                document.getElementById('loginErrorMsg').classList.remove('hidden');
-            }
-        }
-
-        function closeAdminPanelModal() {
-            document.getElementById('adminPanelModal').classList.add('hidden');
-        }
-
-        function logoutAdmin() {
-            isAdminLoggedIn = false;
-            closeAdminPanelModal();
-        }
-
-        function switchAdminTab(tab) {
-            const tabs = {
-                cardapio: { btn: 'adminTabCardapio', content: 'adminTabContentCardapio' },
-                pedidos: { btn: 'adminTabPedidos', content: 'adminTabContentPedidos' },
-                entrega: { btn: 'adminTabEntrega', content: 'adminTabContentEntrega' }
-            };
-
-            Object.keys(tabs).forEach(key => {
-                const btn = document.getElementById(tabs[key].btn);
-                const content = document.getElementById(tabs[key].content);
-                if (!btn || !content) return;
-
-                const active = key === tab;
-                const base = 'px-5 py-3 border-b-2 font-bold text-xs uppercase tracking-wider flex items-center gap-2 whitespace-nowrap';
-                btn.className = (active
-                    ? base + ' border-japa-red text-white'
-                    : base + ' border-transparent text-slate-400 hover:text-white') + (key === 'pedidos' ? ' relative' : '');
-                content.classList.toggle('hidden', !active);
-            });
-
-            if (tab === 'pedidos') renderAdminOrders();
-            if (tab === 'entrega') renderAdminZones();
-        }
-
-        // ===== TAXAS DE ENTREGA POR BAIRRO (ADMIN) =====
-        function renderAdminZones() {
-            const list = document.getElementById('adminZonesList');
-            const badge = document.getElementById('tabZonesBadge');
-            if (badge) {
-                badge.innerText = deliveryZones.length;
-                badge.classList.toggle('hidden', deliveryZones.length === 0);
-            }
-            if (!list) return;
-
-            if (deliveryZones.length === 0) {
-                list.innerHTML = `<div class="p-8 text-center text-slate-500 text-xs border border-dashed border-slate-800 rounded-2xl">
-                    <i class="fa-solid fa-map-location-dot text-2xl text-slate-700 mb-2 block"></i>
-                    Nenhum bairro cadastrado ainda. Use o formulário acima para adicionar o primeiro.
-                </div>`;
-                return;
-            }
-
-            list.innerHTML = deliveryZones.map(zone => `
-                <div class="bg-japa-card p-3.5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center gap-3">
-                    <div class="flex-1 min-w-0">
-                        <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Bairro</label>
-                        <input type="text" value="${esc(zone.name)}" onchange="updateZoneName('${zone.id}', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-white focus:border-japa-red focus:outline-none">
-                    </div>
-                    <div class="w-full sm:w-36">
-                        <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Taxa (R$)</label>
-                        <div class="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 focus-within:border-japa-red">
-                            <span class="text-xs font-bold text-japa-gold">R$</span>
-                            <input type="number" step="0.50" min="0" value="${(Number(zone.fee) || 0).toFixed(2)}" onchange="updateZoneFee('${zone.id}', this.value)" class="w-full bg-transparent text-xs font-bold text-japa-gold focus:outline-none">
-                        </div>
-                    </div>
-                    <div class="flex sm:flex-col gap-2 sm:pt-4">
-                        <button onclick="removeZone('${zone.id}')" class="flex-1 px-3.5 py-2 rounded-xl bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs font-bold transition-all" title="Excluir bairro">
-                            <i class="fa-solid fa-trash-can mr-1"></i> Excluir
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function addDeliveryZone() {
-            if (!isAdminLoggedIn) return;
-            const nameEl = document.getElementById('newZoneName');
-            const feeEl = document.getElementById('newZoneFee');
-            const name = (nameEl ? nameEl.value : '').trim();
-            const fee = parseFloat(feeEl ? feeEl.value : '');
-
-            if (!name) { alert('Informe o nome do bairro.'); return; }
-            if (isNaN(fee) || fee < 0) { alert('Informe o valor da taxa de entrega deste bairro.'); return; }
-            if (deliveryZones.some(z => z.name.toLowerCase() === name.toLowerCase())) {
-                alert('Este bairro já está cadastrado.');
-                return;
-            }
-
-            deliveryZones.push({
-                id: 'z' + Date.now() + Math.floor(Math.random() * 1000),
-                name: name,
-                fee: Math.round(fee * 100) / 100
-            });
-            saveState();
-
-            if (nameEl) nameEl.value = '';
-            if (feeEl) feeEl.value = '';
-
-            renderAdminZones();
-            renderDistrictField();
-            updateCartTotals();
-        }
-
-        function updateZoneFee(id, value) {
-            if (!isAdminLoggedIn) return;
-            const zone = deliveryZones.find(z => z.id === id);
-            if (!zone) return;
-            zone.fee = Math.max(0, Math.round((parseFloat(value) || 0) * 100) / 100);
-            saveState();
-            renderDistrictField();
-            updateCartTotals();
-        }
-
-        function updateZoneName(id, value) {
-            if (!isAdminLoggedIn) return;
-            const zone = deliveryZones.find(z => z.id === id);
-            if (!zone) return;
-            const newName = value.trim();
-            if (!newName) { renderAdminZones(); return; }
-            zone.name = newName;
-            saveState();
-            renderAdminZones();
-            renderDistrictField();
-        }
-
-        function removeZone(id) {
-            if (!isAdminLoggedIn) return;
-            const zone = deliveryZones.find(z => z.id === id);
-            if (!zone) return;
-            if (!confirm(`Remover "${zone.name}" da lista de bairros atendidos?`)) return;
-            deliveryZones = deliveryZones.filter(z => z.id !== id);
-            saveState();
-            renderAdminZones();
-            renderDistrictField();
-            updateCartTotals();
-        }
-
-        function addNewOrderToAdmin(items, total, customer = {}) {
-            const now = new Date();
-            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-            // ID sequencial único (sem colisões)
-            orderSeq = adminOrders.reduce((max, o) => Math.max(max, Number(o.id) || 0), orderSeq) + 1;
-
-            const newOrder = {
-                id: orderSeq,
-                customer: customer.name || 'Pedido via Site WhatsApp',
-                phone: customer.phone || '',
-                address: customer.address || '',
-                payment: customer.payment || '',
-                items: items,
-                deliveryFee: (typeof customer.deliveryFee === 'number') ? customer.deliveryFee : 0,
-                deliveryFeeLabel: customer.deliveryFeeLabel || '',
-                total: Math.round((Number(total) || 0) * 100) / 100,
-                notes: customer.notes || '',
-                changeFor: customer.changeFor || '',
-                status: 'Pendente',
-                time: timeStr
-            };
-            adminOrders.unshift(newOrder);
-            saveState();
-            updateOrderBadges();
-            if (isAdminLoggedIn) renderAdminOrders();
-        }
-
-        function updateOrderBadges() {
-            const pendingCount = adminOrders.filter(o => o.status === 'Pendente').length;
-            const badgeNav = document.getElementById('pendingOrdersBadge');
-            const badgeTab = document.getElementById('tabPendingBadge');
-
-            if (pendingCount > 0) {
-                if (badgeNav) { badgeNav.innerText = pendingCount; badgeNav.classList.remove('hidden'); }
-                if (badgeTab) { badgeTab.innerText = pendingCount; badgeTab.classList.remove('hidden'); }
-            } else {
-                if (badgeNav) badgeNav.classList.add('hidden');
-                if (badgeTab) badgeTab.classList.add('hidden');
-            }
-        }
-
-        function renderAdminOrders() {
-            const list = document.getElementById('adminOrdersList');
-            if (!list) return;
-
-            if (adminOrders.length === 0) {
-                list.innerHTML = `<div class="p-8 text-center text-slate-500 text-xs">Nenhum pedido registrado até o momento.</div>`;
-                return;
-            }
-
-            list.innerHTML = adminOrders.map(order => `
-                <div class="bg-japa-card p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div class="min-w-0">
-                        <div class="flex items-center gap-2 mb-1 flex-wrap">
-                            <span class="text-xs font-black text-japa-gold">#${esc(order.id)}</span>
-                            <span class="text-[11px] font-bold text-slate-300">${esc(order.customer)}</span>
-                            <span class="text-[10px] text-slate-500">(${esc(order.time)})</span>
-                        </div>
-                        <p class="text-xs text-white font-semibold">${esc(order.items)}</p>
-                        ${order.address ? `<p class="text-[11px] text-slate-400 mt-1">📍 ${esc(order.address)}</p>` : ''}
-                        <p class="text-[11px] text-slate-400 mt-1">
-                            ${order.phone ? `📱 ${esc(order.phone)} · ` : ''}
-                            ${order.payment ? `💳 ${esc(order.payment)} · ` : ''}
-                            Taxa: ${esc(orderFeeLabel(order))} | Total: <span class="font-bold text-japa-gold">R$ ${(Number(order.total) || 0).toFixed(2)}</span>
-                        </p>
-                        ${order.notes ? `<p class="text-[11px] text-slate-400 mt-1">📝 ${esc(order.notes)}</p>` : ''}
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <select onchange="updateOrderStatus(${order.id}, this.value)" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-200 focus:outline-none">
-                            <option value="Pendente" ${order.status === 'Pendente' ? 'selected' : ''}>⏳ Pendente</option>
-                            <option value="Em Preparo" ${order.status === 'Em Preparo' ? 'selected' : ''}>👨‍🍳 Em Preparo</option>
-                            <option value="A Caminho" ${order.status === 'A Caminho' ? 'selected' : ''}>🛵 A Caminho</option>
-                            <option value="Concluído" ${order.status === 'Concluído' ? 'selected' : ''}>✅ Concluído</option>
-                        </select>
-                        <button onclick="printOrder(${order.id})" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all" title="Imprimir pedido">
-                            <i class="fa-solid fa-print"></i>
-                        </button>
-                        <button onclick="sendOrderWhatsAppUpdate(${order.id})" class="p-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white text-xs font-bold transition-all" title="Notificar via WhatsApp">
-                            <i class="fa-brands fa-whatsapp"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-            updateOrderBadges();
-        }
-
-        function updateOrderStatus(id, newStatus) {
-            const order = adminOrders.find(o => o.id === id);
-            if (!order) return;
-
-            const previous = order.status;
-            order.status = newStatus;
-            saveState();
-            renderAdminOrders();
-
-            // Dispara a mensagem automática ao cliente quando o pedido muda de status
-            if (previous === newStatus) return;
-            if (newStatus === 'Em Preparo') {
-                sendStatusWhatsApp(order, 'preparo');
-                if (autoPrintOnPrep) printOrder(order.id); // opção do gerente
-            }
-            if (newStatus === 'A Caminho') sendStatusWhatsApp(order, 'caminho');
-        }
-
-        function toggleAutoPrint(enabled) {
-            autoPrintOnPrep = !!enabled;
-            saveState();
-        }
-
-        // Mensagens automáticas de status (confirmação de recebimento e saída para entrega)
-        function sendStatusWhatsApp(order, kind) {
-            if (!order) return false;
-
-            let phone = normalizeWaPhone(order.phone);
-            if (!phone) {
-                const input = prompt(`Pedido #${order.id} — digite o WhatsApp do cliente com DDD (ex: 24999999999):`);
-                if (!input) return false;
-                phone = normalizeWaPhone(input);
-                if (!phone) return false;
-                order.phone = input.trim();
-                saveState();
-                if (isAdminLoggedIn) renderAdminOrders();
-            }
-
-            const rawName = String(order.customer || '').trim();
-            const firstName = (!rawName || rawName.indexOf('Pedido via Site') === 0) ? 'cliente' : rawName.split(' ')[0];
-            const items = String(order.items || '');
-            const total = (Number(order.total) || 0).toFixed(2);
-            const address = order.address || '';
-            const payment = order.payment || '';
-
-            let msg;
-            if (kind === 'preparo') {
-                msg = `🍱 *JAPA'S HOUSE BISTRÔ* 🍱\n\n` +
-                    `Olá, ${firstName}! ✅ *Recebemos o seu pedido #${order.id}*\n\n` +
-                    `👨‍🍳 Ele já está em *preparo* pela nossa equipe.\n\n` +
-                    `📋 *Itens:* ${items}\n` +
-                    `💰 *Total:* R$ ${total}` +
-                    (address ? `\n📍 *Entrega:* ${address}` : '') +
-                    `\n\nObrigado pela preferência!`;
-            } else {
-                msg = `🍱 *JAPA'S HOUSE BISTRÔ* 🍱\n\n` +
-                    `🛵 *Seu pedido saiu para entrega!*\n\n` +
-                    `Olá, ${firstName}, o pedido *#${order.id}* está *a caminho* até você. 🚀\n\n` +
-                    (address ? `📍 *Endereço:* ${address}\n` : '') +
-                    (payment ? `💳 *Pagamento:* ${payment}\n` : '') +
-                    `💰 *Total:* R$ ${total}\n\n` +
-                    `Qualquer coisa, é só responder por aqui. Bom apetite!`;
-            }
-
-            window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-            return true;
-        }
-
-        // Abre a comanda do pedido em uma janela pronta para impressão
-        function printOrder(id) {
-            const order = adminOrders.find(o => o.id === id);
-            if (!order) return;
-
-            const win = window.open('', '_blank', 'width=480,height=780');
-            if (!win) {
-                alert('Não foi possível abrir a janela de impressão.\nLibere os pop-ups deste site e tente novamente.');
-                return;
-            }
-
-            const fee = Number(order.deliveryFee) || 0;
-            const total = Number(order.total) || 0;
-            const subtotal = Math.max(0, Math.round((total - fee) * 100) / 100);
-            const feeLabel = orderFeeLabel(order);
-            const changeFor = order.changeFor ? (Number(order.changeFor) || 0).toFixed(2) : '';
-            const now = new Date();
-            const stamp = `${now.toLocaleDateString('pt-BR')} às ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-            const itemRows = String(order.items || '')
-                .split('•')
-                .map(s => s.trim())
-                .filter(Boolean)
-                .map(p => {
-                    const m = p.match(/^(\d+)x\s*(.*)$/);
-                    const qty = m ? m[1] : '1';
-                    const name = m ? m[2] : p;
-                    return `<tr><td class="qty">${esc(qty)}x</td><td>${esc(name)}</td></tr>`;
-                })
-                .join('');
-
-            const html = `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8">
-<title>Pedido #${esc(order.id)} — Japa's House Bistrô</title>
-<style>
-    @page { margin: 8mm; }
-    * { box-sizing: border-box; }
-    body { font-family: Arial, Helvetica, sans-serif; font-size: 13px; color: #111; width: 76mm; margin: 0 auto; padding: 4px 0; line-height: 1.45; }
-    h1 { font-size: 17px; margin: 0 0 2px; text-align: center; letter-spacing: 1px; }
-    .sub { text-align: center; font-size: 11px; margin-bottom: 6px; }
-    .center { text-align: center; }
-    .rule { border-top: 1px dashed #333; margin: 8px 0; }
-    .big { font-size: 24px; font-weight: bold; text-align: center; letter-spacing: 3px; margin: 4px 0; }
-    table { width: 100%; border-collapse: collapse; margin-top: 4px; }
-    td { padding: 2px 0; vertical-align: top; }
-    .r { text-align: right; white-space: nowrap; }
-    .qty { width: 34px; font-weight: bold; }
-    .total-row td { font-size: 17px; font-weight: bold; border-top: 1px solid #333; padding-top: 6px; }
-    .label { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: #444; }
-    .status { display: inline-block; border: 2px solid #111; padding: 3px 10px; font-weight: bold; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
-    .foot { text-align: center; font-size: 10px; color: #555; margin-top: 10px; }
-    .notes { background: #f1f1f1; padding: 6px; font-size: 12px; margin-top: 6px; }
-    @media print { body { width: auto; } }
-</style>
-</head>
-<body>
-    <h1>JAPA'S HOUSE BISTRÔ</h1>
-    <div class="sub">R. Pres. Vargas, 294 — Vila Velha, Rio Claro/RJ<br>(24) 99883-3667</div>
-    <div class="rule"></div>
-
-    <div class="big">#${esc(order.id)}</div>
-    <div class="center"><span class="status">${esc(order.status)}</span></div>
-    <div class="center label" style="margin-top:6px">Emitido em ${stamp}</div>
-
-    <div class="rule"></div>
-
-    <table>
-        <tr><td class="label">Cliente</td><td class="r">${esc(order.customer)}</td></tr>
-        <tr><td class="label">WhatsApp</td><td class="r">${esc(order.phone || '—')}</td></tr>
-        <tr><td class="label">Pedido às</td><td class="r">${esc(order.time)}</td></tr>
-    </table>
-
-    ${order.address ? `<div style="margin-top:8px"><div class="label">Endereço de entrega</div><div>${esc(order.address)}</div></div>` : ''}
-
-    <div class="rule"></div>
-    <div class="label">Itens do pedido</div>
-    <table>${itemRows}</table>
-
-    <table style="margin-top:8px">
-        <tr><td>Subtotal</td><td class="r">R$ ${subtotal.toFixed(2)}</td></tr>
-        <tr><td>Taxa de entrega</td><td class="r">${esc(feeLabel)}</td></tr>
-        <tr class="total-row"><td>TOTAL</td><td class="r">R$ ${total.toFixed(2)}</td></tr>
-    </table>
-
-    <div style="margin-top:8px"><span class="label">Pagamento:</span> <b>${esc(order.payment || '—')}</b>${changeFor ? ` — troco para R$ ${esc(changeFor)}` : ''}</div>
-
-    ${order.notes ? `<div class="notes"><span class="label">Observações</span><br>${esc(order.notes)}</div>` : ''}
-
-    <div class="rule"></div>
-    <div class="foot">Documento sem valor fiscal — obrigado pela preferência!<br>Japa's House Bistrô — Gastrobar</div>
-</body>
-</html>`;
-
-            win.document.write(html);
-            win.document.close();
-            win.focus();
-            setTimeout(() => { try { win.print(); } catch (e) { /* usuário fecha manualmente */ } }, 400);
-        }
-
-        // Normaliza telefone para o formato do wa.me (remove tudo que não é número e o prefixo 55)
-        function normalizeWaPhone(phone) {
-            let digits = String(phone || '').replace(/\D/g, '');
-            if (digits.length > 11 && digits.startsWith('55')) digits = digits.slice(2);
-            return digits;
-        }
-
-        function sendOrderWhatsAppUpdate(id) {
-            const order = adminOrders.find(o => o.id === id);
-            if (!order) return;
-
-            let phone = order.phone;
-            if (!phone) phone = prompt('Digite o telefone do cliente para enviar a atualização (com DDD):') || '';
-            phone = normalizeWaPhone(phone);
-            if (!phone) return;
-
-            const msg = `🍱 *JAPA'S HOUSE BISTRÔ* 🍱\n\nAtualização do seu Pedido *#${order.id}*:\nStatus Atual: *${order.status.toUpperCase()}*\n\n📋 Items: ${order.items}\nTotal: R$ ${(Number(order.total) || 0).toFixed(2)}\n\nObrigado por escolher o Japa's House Bistrô!`;
-            window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-        }
-
-        function clearCompletedOrders() {
-            adminOrders = adminOrders.filter(o => o.status !== 'Concluído');
-            renderAdminOrders();
-        }
-
-        function filterAdminCategory(category, btn) {
-            currentAdminCategoryFilter = category;
-            setActiveFilter('.admin-cat-btn', btn, ['bg-japa-red', 'text-white'], ['bg-slate-800', 'text-slate-300']);
-            renderAdminProducts();
-        }
-
-        function searchAdminProducts() {
-            renderAdminProducts();
-        }
-
-        function sendQuickWhatsAppConfirmation() {
-            const customerPhone = prompt('Digite o número do WhatsApp do cliente com DDD (ex: 24999999999):');
-            if (!customerPhone) return;
-            const waPhone = normalizeWaPhone(customerPhone);
-            if (!waPhone) return;
-
-            const orderDetails = prompt('Digite o resumo do pedido a confirmar:', '1x Combinado House Salmão Premium');
-            if (!orderDetails) return;
-
-            const msg = `🍱 *JAPA'S HOUSE BISTRÔ* 🍱\n\nOlá! Seu pedido foi *CONFIRMADO* e já está em preparo pela nossa equipe!\n\n📋 *Resumo:* ${orderDetails}\n🛵 *Taxa de Entrega:* conforme o bairro\n\nObrigado pela preferência!`;
-            window.open(`https://wa.me/55${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
-        }
-
-        function renderAdminProducts() {
-            if (!isAdminLoggedIn) return;
-
-            const grid = document.getElementById('adminProductsGrid');
-            if (!grid) return;
-
-            const searchQuery = (document.getElementById('adminSearchInput')?.value || '').toLowerCase();
-
-            const itemsToRender = dishData.filter(dish => {
-                const matchesCat = (currentAdminCategoryFilter === 'todos') || (dish.category === currentAdminCategoryFilter);
-                const matchesSearch = dish.name.toLowerCase().includes(searchQuery) || dish.desc.toLowerCase().includes(searchQuery);
-                return matchesCat && matchesSearch;
-            });
-
-            if (itemsToRender.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 text-xs font-medium">Nenhum produto encontrado.</div>`;
-                return;
-            }
-
-            grid.innerHTML = itemsToRender.map(dish => `
-                <div class="bg-japa-card/90 rounded-3xl border border-slate-800 p-4 flex flex-col justify-between space-y-4 hover:border-slate-700 transition-all duration-300 shadow-xl">
-                    <div>
-                        <div class="relative h-28 rounded-2xl overflow-hidden mb-3 bg-slate-950 group">
-                            <img src="${esc(dish.img)}" alt="${esc(dish.name)}" class="w-full h-full object-cover">
-                            <span class="absolute top-2 left-2 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-japa-red text-white">
-                                ${esc(dish.badge || dish.category)}
-                            </span>
-                        </div>
-                        <h4 class="text-sm font-bold text-white truncate mb-2">${esc(dish.name)}</h4>
-                        <div class="space-y-2">
-                            <div>
-                                <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">URL da Imagem:</label>
-                                <input type="url" value="${esc(dish.img)}" onchange="updateProductImgDirect(${dish.id}, this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1 text-slate-300 text-[11px] focus:border-japa-red focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Descrição:</label>
-                                <textarea onchange="updateProductDescDirect(${dish.id}, this.value)" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-slate-300 text-[11px] leading-relaxed focus:border-japa-red focus:outline-none transition-all resize-none">${esc(dish.desc)}</textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
-                        <div>
-                            <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Preço (R$)</label>
-                            <div class="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1 focus-within:border-japa-red">
-                                <span class="text-xs font-bold text-japa-gold">R$</span>
-                                <input type="number" step="0.50" value="${(Number(dish.price) || 0).toFixed(2)}" onchange="updateProductPriceDirect(${dish.id}, this.value)" class="w-16 bg-transparent text-xs font-bold text-white focus:outline-none">
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-1.5 pt-3">
-                            <button onclick="editProduct(${dish.id})" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs" title="Editar Completo">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            <button onclick="deleteProduct(${dish.id})" class="p-2 rounded-xl bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs" title="Excluir Item">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function updateProductPriceDirect(id, newPrice) {
-            if (!isAdminLoggedIn) return;
-            const dish = dishData.find(d => d.id === id);
-            if (dish) {
-                dish.price = parseFloat(newPrice) || dish.price;
-                refreshPublicMenu();
-            }
-        }
-
-        function updateProductDescDirect(id, newDesc) {
-            if (!isAdminLoggedIn) return;
-            const dish = dishData.find(d => d.id === id);
-            if (dish) {
-                dish.desc = newDesc.trim();
-                refreshPublicMenu();
-            }
-        }
-
-        function updateProductImgDirect(id, newImg) {
-            if (!isAdminLoggedIn) return;
-            const dish = dishData.find(d => d.id === id);
-            if (dish && newImg.trim()) {
-                dish.img = newImg.trim();
-                refreshPublicMenu();
-                renderAdminProducts();
-            }
-        }
-
-        function openProductFormModal(id = null) {
-            const modal = document.getElementById('productFormModal');
-            const title = document.getElementById('formModalTitle');
-            const form = document.getElementById('productForm');
-
-            if (id) {
-                const dish = dishData.find(d => d.id === id);
-                if (!dish) return;
-                title.innerText = 'Editar Produto';
-                document.getElementById('formProductId').value = dish.id;
-                document.getElementById('formProductName').value = dish.name;
-                document.getElementById('formProductPrice').value = dish.price;
-                document.getElementById('formProductCategory').value = dish.category;
-                document.getElementById('formProductBadge').value = dish.badge || '';
-                document.getElementById('formProductImg').value = dish.img;
-                document.getElementById('formProductDesc').value = dish.desc;
-            } else {
-                title.innerText = 'Cadastrar Novo Produto';
-                form.reset();
-                document.getElementById('formProductId').value = '';
-            }
-
-            modal.classList.remove('hidden');
-        }
-
-        function closeProductFormModal() {
-            document.getElementById('productFormModal').classList.add('hidden');
-        }
-
-        function handleProductFormSubmit(e) {
-            e.preventDefault();
-            if (!isAdminLoggedIn) return;
-
-            const id = document.getElementById('formProductId').value;
-            const name = document.getElementById('formProductName').value;
-            const price = parseFloat(document.getElementById('formProductPrice').value);
-            const category = document.getElementById('formProductCategory').value;
-            const badge = document.getElementById('formProductBadge').value;
-            const img = document.getElementById('formProductImg').value || 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=800&q=80';
-            const desc = document.getElementById('formProductDesc').value;
-
-            if (id) {
-                const dish = dishData.find(d => d.id === parseInt(id));
-                if (dish) {
-                    dish.name = name;
-                    dish.price = price;
-                    dish.category = category;
-                    dish.badge = badge;
-                    dish.img = img;
-                    dish.desc = desc;
-                }
-            } else {
-                const newId = dishData.length ? Math.max(...dishData.map(d => d.id)) + 1 : 1;
-                dishData.push({ id: newId, name, price, category, badge, img, desc });
-            }
-
-            refreshPublicMenu();
-            renderAdminProducts();
-            closeProductFormModal();
-        }
-
-        function editProduct(id) {
-            openProductFormModal(id);
-        }
-
-        function deleteProduct(id) {
-            if (!isAdminLoggedIn) return;
-            if (confirm('Tem certeza que deseja excluir este produto do cardápio?')) {
-                dishData = dishData.filter(d => d.id !== id);
-                cart = cart.filter(c => c.key !== 'dish-' + id);
-                updateCartBadge();
-                refreshPublicMenu();
-                renderAdminProducts();
-            }
-        }
-
-        function selectTemakiOption(type, optionKey, price) {
-            if (type === 'proteina') {
-                selectedProteinaPrice = price;
-                selectedProteinaName = optionKey === 'salmao' ? 'Salmão Fresco' : (optionKey === 'camarao' ? 'Camarão Empanado' : 'Shimeji na Manteiga');
-            } else if (type === 'estilo') {
-                selectedEstiloPrice = price;
-                selectedEstiloName = optionKey === 'cru' ? 'Tradicional Cru' : (optionKey === 'flambado' ? 'Flambado no Maçarico' : 'Hot Empanado');
-            }
-
-            document.getElementById('summaryProteina').innerText = selectedProteinaName;
-            document.getElementById('summaryEstilo').innerText = selectedEstiloName;
-            const subtotal = (Number(selectedProteinaPrice) || 0) + (Number(selectedEstiloPrice) || 0);
-            document.getElementById('summaryTotal').innerText = `R$ ${subtotal.toFixed(2)}`;
-        }
-
-        function orderCustomTemaki() {
-            const total = (Number(selectedProteinaPrice) || 0) + (Number(selectedEstiloPrice) || 0);
-            const itemDesc = `Temaki Customizado (${selectedProteinaName} - ${selectedEstiloName})`;
-            addNewOrderToAdmin(itemDesc, total, { deliveryFee: 0, deliveryFeeLabel: 'A combinar' });
-
-            const msg = `Olá! Gostaria de pedir um Temaki Customizado:\n- Proteína: ${selectedProteinaName}\n- Preparo: ${selectedEstiloName}\n- Taxa de Entrega: a combinar (conforme o bairro)\n- Total: R$ ${total.toFixed(2)}`;
-            window.open(`https://wa.me/5524998833667?text=${encodeURIComponent(msg)}`, '_blank');
-        }
-
-        function openDishModal(id) {
-            const dish = dishData.find(d => d.id === id);
-            if (!dish) return;
-
-            // Evita modais duplicados
-            const existing = document.getElementById('activeDishModal');
-            if (existing) existing.remove();
-
-            const safePrice = Number(dish.price) || 0;
-
-            const modal = document.createElement('div');
-            modal.id = 'activeDishModal';
-            modal.className = 'fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4';
-            modal.innerHTML = `
-                <div class="bg-japa-card max-w-md w-full rounded-3xl border border-slate-700/80 overflow-hidden shadow-2xl relative p-6 max-h-[92vh] overflow-y-auto">
-                    <button onclick="document.getElementById('activeDishModal').remove()" class="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                    <img src="${esc(dish.img)}" alt="${esc(dish.name)}" class="w-full h-48 object-cover rounded-2xl mb-4 bg-slate-900">
-                    <span class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-japa-red/20 text-japa-red inline-block mb-2">${esc(dish.badge || dish.category)}</span>
-                    <h3 class="font-cinzel text-xl font-bold text-white mb-1 pr-8">${esc(dish.name)}</h3>
-                    <p class="text-xs text-slate-400 mb-4 leading-relaxed">${esc(dish.desc)}</p>
-                    <div class="text-[11px] text-slate-400 mb-4 p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex justify-between items-center">
-                        <span>Taxa de Entrega:</span>
-                        <span class="font-bold text-japa-gold text-right">Conforme o bairro (no carrinho)</span>
-                    </div>
-                    <div class="pt-4 border-t border-slate-800">
-                        <div class="flex items-center justify-between mb-3">
-                            <div>
-                                <span class="text-[10px] text-slate-500 uppercase block">Preço do prato</span>
-                                <span class="text-lg font-extrabold text-japa-gold">R$ ${safePrice.toFixed(2)}</span>
-                            </div>
-                            <span class="text-[11px] font-bold text-slate-400 text-right leading-snug">Entrega cobrada<br>no carrinho</span>
-                        </div>
-                        <button onclick="addDishToCart(${dish.id})" class="w-full py-3 rounded-full bg-gradient-to-r from-japa-crimson to-japa-red hover:from-japa-red hover:to-pink-600 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all">
-                            <i class="fa-solid fa-cart-plus"></i> Adicionar ao Carrinho
-                        </button>
-                        <button onclick="submitDishOrder(${dish.id})" class="w-full mt-2 py-2 text-[11px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors">
-                            ou pedir direto no WhatsApp
-                        </button>
-                    </div>
-                </div>
-            `;
-            // Fecha ao clicar fora do card
-            modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-            document.body.appendChild(modal);
-        }
-
-        function submitDishOrder(id) {
-            const dish = dishData.find(d => d.id === id);
-            if (!dish) return;
-            const safePrice = Number(dish.price) || 0;
-
-            addNewOrderToAdmin(`1x ${dish.name}`, safePrice, { deliveryFee: 0, deliveryFeeLabel: 'A combinar' });
-            const msg = `Olá! Gostaria de pedir o prato: ${dish.name} (R$ ${safePrice.toFixed(2)})\nTaxa de Entrega: a combinar (conforme o bairro)`;
-            window.open(`https://wa.me/5524998833667?text=${encodeURIComponent(msg)}`, '_blank');
-
-            const activeModal = document.getElementById('activeDishModal');
-            if (activeModal) activeModal.remove();
-        }
-
-        function handleReservationSubmit(e) {
-            e.preventDefault();
-            const name = document.getElementById('resName').value.trim();
-            const phone = document.getElementById('resPhone').value.trim();
-            const date = document.getElementById('resDate').value;
-            const time = document.getElementById('resTime').value;
-            const people = document.getElementById('resPeople').value;
-
-            if (!date) return;
-
-            // Segunda-feira: fechado
-            const chosenDate = new Date(date + 'T12:00:00');
-            if (chosenDate.getDay() === 1) {
-                alert('Segunda-feira estamos fechados. Por favor, escolha outro dia para sua reserva.');
-                return;
-            }
-
-            const [year, month, day] = date.split('-');
-            const dateBR = `${day}/${month}/${year}`;
-
-            const msg = `Olá! Gostaria de reservar uma mesa no Japa's House Bistrô:\n- Nome: ${name}\n- Telefone: ${phone}\n- Data: ${dateBR}\n- Horário: ${time}\n- Pessoas: ${people}`;
-            window.open(`https://wa.me/5524998833667?text=${encodeURIComponent(msg)}`, '_blank');
-        }
-
-        // ===== CARRINHO DE COMPRAS =====
-        function cartSubtotal() {
-            return cart.reduce((sum, item) => sum + ((Number(item.price) || 0) * (Number(item.qty) || 0)), 0);
-        }
-
-        function cartCount() {
-            return cart.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
-        }
-
-        function updateCartBadge() {
-            const badge = document.getElementById('cartBadge');
-            if (!badge) return;
-            const count = cartCount();
-            badge.innerText = count;
-            badge.classList.toggle('hidden', count === 0);
-        }
-
-        function addToCart(item) {
-            const existing = cart.find(c => c.key === item.key);
-            if (existing) {
-                existing.qty = (Number(existing.qty) || 0) + 1;
-            } else {
-                cart.push({ key: item.key, name: item.name, price: Number(item.price) || 0, qty: 1 });
-            }
-            saveState();
-            updateCartBadge();
-            openCart();
-        }
-
-        function addDishToCart(id) {
-            const dish = dishData.find(d => d.id === id);
-            if (!dish) return;
-            addToCart({ key: 'dish-' + dish.id, name: dish.name, price: Number(dish.price) || 0 });
-            const activeModal = document.getElementById('activeDishModal');
-            if (activeModal) activeModal.remove();
-        }
-
-        function addTemakiToCart() {
-            const price = (Number(selectedProteinaPrice) || 0) + (Number(selectedEstiloPrice) || 0);
-            addToCart({
-                key: 'temaki-' + selectedProteinaName + '-' + selectedEstiloName,
-                name: `Temaki Customizado (${selectedProteinaName} - ${selectedEstiloName})`,
-                price: price
-            });
-        }
-
-        function changeCartQty(index, delta) {
-            const item = cart[index];
-            if (!item) return;
-            item.qty = (Number(item.qty) || 0) + delta;
-            if (item.qty <= 0) cart.splice(index, 1);
-            saveState();
-            updateCartBadge();
-            renderCart();
-        }
-
-        function removeCartItem(index) {
-            cart.splice(index, 1);
-            saveState();
-            updateCartBadge();
-            renderCart();
-        }
-
-        function renderCart() {
-            const list = document.getElementById('cartItemsList');
-            if (!list) return;
-
-            if (cart.length === 0) {
-                list.innerHTML = `
-                    <div class="py-8 text-center">
-                        <i class="fa-solid fa-basket-shopping text-3xl text-slate-700 mb-3 block"></i>
-                        <p class="text-xs text-slate-500 font-semibold">Seu carrinho está vazio.</p>
-                        <p class="text-[11px] text-slate-600 mt-1">Toque nos pratos do Cardápio para adicionar.</p>
-                    </div>`;
-            } else {
-                list.innerHTML = cart.map((item, idx) => `
-                    <div class="flex items-center gap-3 bg-japa-card p-3 rounded-2xl border border-slate-800">
-                        <div class="flex-1 min-w-0">
-                            <p class="text-xs font-bold text-white leading-snug">${esc(item.name)}</p>
-                            <p class="text-[11px] text-japa-gold font-bold mt-1">R$ ${(Number(item.price) || 0).toFixed(2)} / un.</p>
-                        </div>
-                        <div class="flex items-center gap-1.5 shrink-0">
-                            <button type="button" onclick="changeCartQty(${idx}, -1)" aria-label="Diminuir quantidade" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-xs transition-colors">−</button>
-                            <span class="w-6 text-center text-xs font-black text-white">${Number(item.qty) || 0}</span>
-                            <button type="button" onclick="changeCartQty(${idx}, 1)" aria-label="Aumentar quantidade" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-xs transition-colors">+</button>
-                        </div>
-                        <button type="button" onclick="removeCartItem(${idx})" aria-label="Remover item" class="w-7 h-7 rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs transition-colors shrink-0">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                `).join('');
-            }
-            updateCartTotals();
-        }
-
-        // Renderiza o campo "Bairro" do carrinho a partir das zonas cadastradas pelo admin
-        function renderDistrictField() {
-            const box = document.getElementById('districtField');
-            if (!box) return;
-
-            const current = document.getElementById('cartDistrict');
-            const previous = current ? current.value : '';
-            const label = '<label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Bairro *</label>';
-            const inputClass = 'w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:border-japa-red focus:outline-none';
-
-            // Sem zonas cadastradas: campo de texto livre (entrega fica a combinar)
-            if (deliveryZones.length === 0) {
-                const value = (previous && previous !== '__outro__') ? previous : '';
-                box.innerHTML = label +
-                    `<input type="text" id="cartDistrict" required value="${esc(value)}" placeholder="Vila Velha" class="${inputClass}" oninput="updateCartTotals()">`;
-                return;
-            }
-
-            const otherSelected = previous === '__outro__';
-            const placeholderSelected = (!previous || (!otherSelected && !deliveryZones.some(z => z.name === previous))) ? ' selected' : '';
-
-            const options = deliveryZones.map(zone => {
-                const fee = Number(zone.fee) || 0;
-                const feeLabel = fee === 0 ? 'GRÁTIS' : `R$ ${fee.toFixed(2)}`;
-                const selected = previous === zone.name ? ' selected' : '';
-                return `<option value="${esc(zone.name)}" data-fee="${fee}"${selected}>${esc(zone.name)} — ${feeLabel}</option>`;
-            }).join('');
-
-            box.innerHTML = label + `
-                <select id="cartDistrict" required class="${inputClass}" onchange="onDistrictChange()">
-                    <option value="" disabled${placeholderSelected}>Selecione seu bairro</option>
-                    ${options}
-                    <option value="__outro__"${otherSelected ? ' selected' : ''}>Outro bairro — entrega a combinar</option>
-                </select>
-                <input type="text" id="cartDistrictOther" class="${inputClass} mt-2${otherSelected ? '' : ' hidden'}" placeholder="Digite o nome do bairro" ${otherSelected ? 'required' : ''} oninput="updateCartTotals()">`;
-
-            onDistrictChange();
-        }
-
-        function onDistrictChange() {
-            const sel = document.getElementById('cartDistrict');
-            const other = document.getElementById('cartDistrictOther');
-            if (sel && other) {
-                const isOther = sel.value === '__outro__';
-                other.classList.toggle('hidden', !isOther);
-                other.required = isOther;
-                if (!isOther) other.value = '';
-            }
-            updateCartTotals();
-        }
-
-        function getDistrictValue() {
-            const sel = document.getElementById('cartDistrict');
-            if (!sel) return '';
-            if (sel.value === '__outro__') {
-                const other = document.getElementById('cartDistrictOther');
-                return other ? other.value.trim() : '';
-            }
-            return sel.value;
-        }
-
-        // Sem taxa padrão: só valem as taxas cadastradas por bairro
-        function getCartFeeInfo() {
-            const sel = document.getElementById('cartDistrict');
-            if (sel && sel.tagName === 'SELECT' && sel.value && sel.value !== '__outro__') {
-                const opt = sel.options[sel.selectedIndex];
-                const fee = parseFloat(opt ? opt.getAttribute('data-fee') : NaN);
-                if (!isNaN(fee)) {
-                    const value = Math.max(0, fee);
-                    return { fee: value, label: value === 0 ? 'GRÁTIS' : `R$ ${value.toFixed(2)}` };
-                }
-            }
-            return { fee: 0, label: 'A combinar' };
-        }
-
-        // Rótulo da taxa exibido no painel do gerente e na comanda
-        function orderFeeLabel(order) {
-            if (order && order.deliveryFeeLabel) return order.deliveryFeeLabel;
-            const fee = Number(order && order.deliveryFee) || 0;
-            return fee === 0 ? 'GRÁTIS' : `R$ ${fee.toFixed(2)}`;
-        }
-
-        function updateCartTotals() {
-            const subtotal = cartSubtotal();
-            const feeInfo = getCartFeeInfo();
-            const fee = feeInfo.fee;
-            const isEmpty = cart.length === 0;
-
-            const subEl = document.getElementById('cartSubtotal');
-            const feeEl = document.getElementById('cartFeeValue');
-            const feeInfoEl = document.getElementById('cartFeeInfo');
-            const totEl = document.getElementById('cartTotal');
-            const hintEl = document.getElementById('cartEmptyHint');
-            const btnEl = document.getElementById('cartCheckoutBtn');
-
-            const sel = document.getElementById('cartDistrict');
-            const zoneName = (sel && sel.tagName === 'SELECT' && sel.value && sel.value !== '__outro__') ? sel.value : '';
-
-            if (subEl) subEl.innerText = `R$ ${subtotal.toFixed(2)}`;
-            if (feeEl) feeEl.innerText = feeInfo.label;
-            if (feeInfoEl) feeInfoEl.innerText = zoneName ? `${feeInfo.label} · ${zoneName}` : feeInfo.label;
-            if (totEl) totEl.innerText = `R$ ${(subtotal + fee).toFixed(2)}`;
-            if (hintEl) hintEl.classList.toggle('hidden', !isEmpty);
-            if (btnEl) btnEl.disabled = isEmpty;
-        }
-
-        function openCart() {
-            const modal = document.getElementById('cartModal');
-            if (!modal) return;
-            renderCart();
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeCart() {
-            const modal = document.getElementById('cartModal');
-            if (!modal) return;
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        function toggleChangeField() {
-            const pay = document.getElementById('cartPayment');
-            const wrap = document.getElementById('cartChangeWrap');
-            if (!pay || !wrap) return;
-            wrap.classList.toggle('hidden', pay.value !== 'Dinheiro');
-        }
-
-        function handleCheckout(e) {
-            e.preventDefault();
-
-            if (cart.length === 0) {
-                alert('Adicione pelo menos um item ao carrinho antes de finalizar.');
-                return;
-            }
-
-            const name = document.getElementById('cartName').value.trim();
-            const phone = document.getElementById('cartPhone').value.trim();
-            const address = document.getElementById('cartAddress').value.trim();
-            const district = getDistrictValue();
-            const complement = document.getElementById('cartComplement').value.trim();
-            const payment = document.getElementById('cartPayment').value;
-            const changeFor = document.getElementById('cartChangeFor').value.trim();
-            const notes = document.getElementById('cartNotes').value.trim();
-            const feeInfo = getCartFeeInfo();
-            const fee = feeInfo.fee;
-            const subtotal = cartSubtotal();
-            const total = subtotal + fee;
-
-            const fullAddress = `${address} - ${district}${complement ? ' - ' + complement : ''}`;
-
-            const itemsList = cart.map(item =>
-                `${item.qty}x ${item.name} — R$ ${((Number(item.price) || 0) * (Number(item.qty) || 0)).toFixed(2)}`
-            ).join('\n');
-
-            const msg = `🍱 *JAPA'S HOUSE BISTRÔ* 🍱\n\n` +
-                `🛒 *NOVO PEDIDO PELO SITE*\n\n` +
-                `👤 *Cliente:* ${name}\n` +
-                `📱 *WhatsApp:* ${phone}\n\n` +
-                `📍 *Endereço de Entrega:*\n${fullAddress}\n\n` +
-                `📋 *Itens:*\n${itemsList}\n\n` +
-                `💰 Subtotal: R$ ${subtotal.toFixed(2)}\n` +
-                `🛵 Taxa de Entrega: ${feeInfo.label}\n` +
-                `*TOTAL: R$ ${total.toFixed(2)}*\n\n` +
-                `💳 *Pagamento:* ${payment}${(payment === 'Dinheiro' && changeFor) ? ` (troco para R$ ${Number(changeFor).toFixed(2)})` : ''}` +
-                (notes ? `\n📝 *Observações:* ${notes}` : '');
-
-            addNewOrderToAdmin(itemsList.replace(/\n/g, '  •  '), total, {
-                name: name,
-                phone: phone,
-                address: fullAddress,
-                payment: payment,
-                deliveryFee: fee,
-                deliveryFeeLabel: feeInfo.label,
-                notes: notes,
-                changeFor: changeFor
-            });
-
-            window.open(`https://wa.me/5524998833667?text=${encodeURIComponent(msg)}`, '_blank');
-
-            // Limpa o carrinho e o formulário
-            cart = [];
-            saveState();
-            updateCartBadge();
-
-            const form = document.getElementById('checkoutForm');
-            if (form) form.reset();
-            toggleChangeField();
-            renderDistrictField();
-            renderCart();
-            closeCart();
-        }
-
-        // ===== MENU MOBILE =====
-        function toggleMobileNav() {
-            const nav = document.getElementById('mobileNav');
-            const icon = document.getElementById('mobileNavIcon');
-            const trigger = icon ? icon.closest('button') : null;
-            if (!nav) return;
-            const isHidden = nav.classList.toggle('hidden');
-            if (icon) icon.className = isHidden ? 'fa-solid fa-bars' : 'fa-solid fa-xmark';
-            if (trigger) trigger.setAttribute('aria-expanded', String(!isHidden));
-        }
-
-        function closeMobileNav() {
-            const nav = document.getElementById('mobileNav');
-            const icon = document.getElementById('mobileNavIcon');
-            if (nav) nav.classList.add('hidden');
-            if (icon) icon.className = 'fa-solid fa-bars';
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            loadState();
-            filteredDishes = [...dishData];
-
-            initSakura();
-            renderRouletteCards();
-            startAutoSpin();
-            updateOrderBadges();
-
-            selectTemakiOption('proteina', 'salmao', 28.00);
-
-            updateCartBadge();
-            renderDistrictField();
-            renderCart();
-            renderAdminZones();
-
-            const autoPrint = document.getElementById('autoPrintCheckbox');
-            if (autoPrint) autoPrint.checked = autoPrintOnPrep;
-
-            // Reservas: não permite escolher data no passado
-            const resDate = document.getElementById('resDate');
-            if (resDate) resDate.min = new Date().toISOString().split('T')[0];
-        });
-
-        // ESC fecha todos os modais abertos
-        document.addEventListener('keydown', e => {
-            if (e.key !== 'Escape') return;
-            closeCart();
-            closeMobileNav();
-            closeAdminLoginModal();
-            closeAdminPanelModal();
-            closeProductFormModal();
-            const dishModal = document.getElementById('activeDishModal');
-            if (dishModal) dishModal.remove();
-        });
-    </script>
 </body>
 </html>

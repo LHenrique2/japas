@@ -1,0 +1,19 @@
+{
+  "name": "Japa's House Bistrô",
+  "short_name": "Japa's House",
+  "description": "Gastronomia interativa no coração da Vila Velha, Rio Claro/RJ.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#090B10",
+  "theme_color": "#090B10",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

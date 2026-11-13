@@ -2,3 +2,14 @@ node_modules/
 .tmp-*
 npm-debug.log*
 .DS_Store
+
+# Segredos e configuração local
+.env
+.env.*
+!.env.example
+
+# Banco de dados local (contém pedidos, clientes e hash da senha do admin)
+server/data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm

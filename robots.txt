@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Blocos que não devem ser indexados
+Disallow: /_check/
+
+Sitemap: https://japashousebistro.com.br/sitemap.xml

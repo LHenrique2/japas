@@ -1,15 +1,1 @@
-{
-  "name": "japas-house",
-  "version": "1.0.0",
-  "description": "",
-  "main": ".tmp-teste-status.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "start": "^5.1.0"
-  }
-}
+{"name": "japas-house", "version": "1.1.0", "description": "Site do Japa's House Bistrô — cardápio interativo, carrinho, painel de gestão e backend Node/Express/SQLite.", "private": true, "scripts": {"check": "node _check/check.mjs", "dup": "node _check/duplicacao.mjs", "fix-mojibake": "node _check/fix-mojibake.mjs", "start": "node server/index.mjs", "dev": "node --watch server/index.mjs"}, "dependencies": {"bcryptjs": "^2.4.3", "better-sqlite3": "^11.3.0", "cors": "^2.8.5", "dotenv": "^16.4.5", "express": "^4.19.2", "jsonwebtoken": "^9.0.2"}, "keywords": ["restaurante", "bistro", "sushi", "cardapio", "rio-claro"], "author": "Japa's House Bistrô", "license": "ISC"}

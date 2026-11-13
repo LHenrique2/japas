@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página não encontrada — Japa's House Bistrô</title>
+    <meta name="robots" content="noindex, follow">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+    <style>
+        body { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .erro-404 { font-family: 'Cinzel', serif; font-size: clamp(4rem, 18vw, 10rem); line-height: 1; }
+    </style>
+</head>
+<body class="bg-japa-black text-slate-100 antialiased">
+    <main class="max-w-2xl mx-auto px-6 py-20 text-center">
+        <p class="erro-404 font-black text-japa-red">404</p>
+        <h1 class="font-cinzel text-3xl sm:text-4xl font-extrabold text-white mt-4">Essa página saiu da mesa</h1>
+        <p class="text-slate-400 text-sm mt-4 leading-relaxed">
+            O endereço que você tentou acessar não existe (ou foi movido).
+            Mas o cardápio continua aberto — e a cozinha também.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-3 justify-center mt-10">
+            <a href="./" class="px-8 py-4 rounded-full bg-japa-red hover:bg-rose-600 text-white font-bold text-xs uppercase tracking-widest transition-all">
+                Voltar ao início
+            </a>
+            <a href="./cardapio.html" class="px-8 py-4 rounded-full bg-japa-card hover:bg-japa-dark border border-slate-800 text-slate-200 font-bold text-xs uppercase tracking-widest transition-all">
+                Ver o cardápio
+            </a>
+            <a id="zap404" href="#" class="px-8 py-4 rounded-full bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white font-bold text-xs uppercase tracking-widest border border-emerald-600/40 transition-all flex items-center justify-center gap-2">
+                <i class="fa-brands fa-whatsapp"></i> Falar com a gente
+            </a>
+        </div>
+    </main>
+
+    <script src="./config.js"></script>
+    <script>
+        document.getElementById('zap404').href =
+            'https://wa.me/' + window.JAPA.business.phone + '?text=' +
+            encodeURIComponent(window.JAPA.whatsapp.greeting + ' Preciso de uma ajuda com o site.');
+    </script>
+</body>
+</html>

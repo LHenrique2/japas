@@ -117,8 +117,13 @@ for (const [file, text] of [['app.js', js], ...htmlFiles.map((f) => [f, htmls[f]
 // ════════════════════════════════════════════════════════════
 const htmlIds = new Set([...allHtml.matchAll(/\sid="([^"]+)"/g)].map((x) => x[1]));
 const jsIds = new Set([...js.matchAll(/getElementById\(['"]([^'"]+)['"]\)/g)].map((x) => x[1]));
+// IDs que o próprio app.js cria via innerHTML/createElement (ex.: modal da mesa)
+const jsCreatedIds = new Set([
+    ...[...js.matchAll(/\sid="([^"]+)"/g)].map((x) => x[1]),
+    ...[...js.matchAll(/\.id\s*=\s*['"]([^'"]+)['"]/g)].map((x) => x[1])
+]);
 const createdDynamically = new Set(['activeDishModal', 'orderToast', 'toast']);
-const orphanIds = [...jsIds].filter((id) => !htmlIds.has(id) && !createdDynamically.has(id));
+const orphanIds = [...jsIds].filter((id) => !htmlIds.has(id) && !jsCreatedIds.has(id) && !createdDynamically.has(id));
 if (orphanIds.length) add('WARN', 'orphan-id', 'app.js', `${orphanIds.length} id(s) sem correspondente no HTML: ${orphanIds.join(', ')}`);
 
 // ════════════════════════════════════════════════════════════
@@ -174,7 +179,9 @@ const defined = [...new Set([...js.matchAll(/function\s+(\w+)\s*\(/g)].map((x) =
 const dead = defined.filter((fn) => {
   const inJs = [...js.matchAll(new RegExp(`\\b${fn}\\s*\\(`, 'g'))].length;
   const inHtml = [...allHtml.matchAll(new RegExp(`["'\\s]${fn}\\s*\\(`, 'g'))].length;
-  return inJs <= 1 && inHtml === 0;
+  // passada como callback (map/filter/forEach/setInterval/onclick=) conta como uso
+  const comoCallback = [...js.matchAll(new RegExp(`[,\\(\\s]${fn}\\b(?![\\w$])`, 'g'))].length;
+  return inJs <= 1 && inHtml === 0 && comoCallback === 0;
 });
 if (dead.length) add('INFO', 'dead-code', 'app.js', `${dead.length} função(ões) nunca chamada(s): ${dead.join(', ')}`);
 
@@ -206,7 +213,9 @@ for (const [file, text] of Object.entries(htmls)) {
   const live = text.replace(/<script[^>]*type="text\/plain"[^>]*>[\s\S]*?<\/script>/gi, '');
   const noAlt = [...live.matchAll(/<img\b[^>]*>/g)].filter((x) => !/\balt=/.test(x[0]));
   if (noAlt.length) add('WARN', 'a11y-img-alt', file, `${noAlt.length} <img> sem atributo alt`);
-  if (!/role="dialog"|aria-modal/.test(live)) add('INFO', 'a11y-modal', file, 'modais sem role="dialog"/aria-modal');
+  // Só acusa páginas que TÊM modal (container fixo em tela cheia ou id terminado em Modal)
+  const temModal = /id="[^"]*[Mm]odal[^"]*"/.test(live) || /class="[^"]*fixed[^"]*inset-0/.test(live);
+  if (temModal && !/role="dialog"|aria-modal/.test(live)) add('INFO', 'a11y-modal', file, 'modais sem role="dialog"/aria-modal');
 }
 if (/requestAnimationFrame\(drawSakura\)/.test(js) && !/prefers-reduced-motion/.test(js.slice(js.indexOf('function initSakura'), js.indexOf('function renderMenuTabs')))) {
   add('WARN', 'a11y-motion', 'app.js', 'canvas de sakura roda em requestAnimationFrame sem respeitar prefers-reduced-motion (a roleta 3D respeita)');
