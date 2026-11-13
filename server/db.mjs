@@ -232,12 +232,34 @@ function lerConfigDoSite() {
 
 // ── Seed de admin, config e status da loja ─────────────────────────────────
 function seedDefaults() {
-  // Admin padrão (SENHA PADRÃO '1234' — TROQUE via painel assim que entrar)
+  // Admin do painel: a senha vem do .env (ADMIN_PASSWORD).
+  // Em produção ela é OBRIGATÓRIA — sem ela o servidor não sobe, para nunca
+  // existir um admin com senha conhecida por qualquer um.
+  // Em desenvolvimento, sem ADMIN_PASSWORD, cai para '1234' (com aviso).
   const adminCount = db.prepare('SELECT COUNT(*) AS c FROM admin_users').get().c;
   if (adminCount === 0) {
-    const hash = bcrypt.hashSync('1234', 10);
+    const production = process.env.NODE_ENV === 'production';
+    const senhaAdmin = String(process.env.ADMIN_PASSWORD || '').trim();
+
+    if (!senhaAdmin && production) {
+      console.error("❌ ADMIN_PASSWORD não definido. Defina no .env (ou nas variáveis do host) a senha do painel antes de subir em produção.");
+      process.exit(1);
+    }
+
+    const senha = senhaAdmin || '1234';
+    if (!senhaAdmin) {
+      console.warn("⚠️  ADMIN_PASSWORD não definido: admin criado com a senha padrão '1234'. Troque no painel ou defina ADMIN_PASSWORD no .env.");
+    }
+    if (senha.length < 4) {
+      console.error('❌ ADMIN_PASSWORD precisa de pelo menos 4 caracteres.');
+      process.exit(1);
+    }
+
+    const hash = bcrypt.hashSync(senha, 10);
     db.prepare('INSERT INTO admin_users (username, password_hash) VALUES (?, ?)').run('admin', hash);
-    console.log("✅ Seed admin: usuário 'admin' criado com senha '1234' (troque no painel).");
+    console.log(senhaAdmin
+      ? "✅ Seed admin: usuário 'admin' criado com a senha do ADMIN_PASSWORD."
+      : "✅ Seed admin: usuário 'admin' criado com senha '1234' (troque no painel).");
   }
 
   // Config do site: lida do config.js (FONTE ÚNICA) — o servidor não repete

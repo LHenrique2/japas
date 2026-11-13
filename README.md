@@ -31,7 +31,7 @@ pedidos por WhatsApp, comandas em mesas e painel de cozinha.
 
 ```bash
 npm install
-cp .env.example .env      # ajuste o JWT_SECRET
+cp .env.example .env      # ajuste o JWT_SECRET e o ADMIN_PASSWORD
 node server/index.mjs      # http://localhost:3000
 ```
 
@@ -40,6 +40,15 @@ O banco é **SQLite** e é criado sozinho em `server/data/`. Para gerar um segre
 ```bash
 node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```
+
+### Acesso ao painel do gerente
+
+Usuário: `admin` · Senha: a que estiver em `ADMIN_PASSWORD` no `.env`.
+
+- Em **produção** (`NODE_ENV=production`) o `ADMIN_PASSWORD` é **obrigatório**: sem ele o
+  servidor não sobe, e nunca existe um painel com senha padrão conhecida.
+- Em desenvolvimento, sem `ADMIN_PASSWORD`, o admin é criado com a senha `1234`
+  (com aviso no console). Troque pelo botão "Senha" do painel.
 
 ### Estrutura
 
