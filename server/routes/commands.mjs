@@ -86,7 +86,8 @@ router.post('/table/:id', limiteComanda, (req, res) => {
     const { mesa, erro } = mesaComCodigo(req.params.id, req.body?.codigo);
     if (erro) return res.status(403).json({ error: erro });
 
-    const calc = recalcularValores(req.body?.itens || req.body?.items, '');
+    // Comanda de mesa: o cliente está no salão, então não há taxa de entrega.
+    const calc = recalcularValores(req.body?.itens || req.body?.items, '', { semEntrega: true });
     if (!calc.linhas.length) return res.status(400).json({ error: 'Nenhum item válido na comanda.' });
     if (calc.desconhecidos.length) {
         return res.status(400).json({ error: `Item fora do cardápio: ${calc.desconhecidos.join(', ')}.` });

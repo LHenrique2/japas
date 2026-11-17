@@ -759,7 +759,7 @@ let adminOrders = [
         customer: 'Cliente Exemplo (Demo)',
         items: '1x Combinado House Salmão Premium',
         deliveryFee: 0,
-        deliveryFeeLabel: 'A combinar',
+        deliveryFeeLabel: 'GRÁTIS',
         total: 89.90,
         status: 'Pendente',
         time: '19:42'
@@ -1385,7 +1385,7 @@ async function apiCriarZona(zona) {
         if (d && d.id) { zona.id = d.id; saveState(); }
         return true;
     } catch (e) {
-        avisoSalvoSoAqui('Bairro', e);
+        avisoSalvoSoAqui('Opção de entrega', e);
         return false;
     }
 }
@@ -1420,7 +1420,7 @@ async function apiExcluirZona(id) {
         }
         return true;
     } catch (e) {
-        avisoSalvoSoAqui('Bairro', e);
+        avisoSalvoSoAqui('Opção de entrega', e);
         return false;
     }
 }
@@ -1509,7 +1509,7 @@ function normalizarPedidoServidor(o) {
         payment: o.payment || '',
         items: o.items || '',
         deliveryFee: Number(o.deliveryFee) || 0,
-        deliveryFeeLabel: o.deliveryFeeLabel || 'A combinar',
+        deliveryFeeLabel: o.deliveryFeeLabel || 'GRÁTIS',
         total: Number(o.total) || 0,
         notes: o.notes || '',
         changeFor: o.changeFor || '',
@@ -2354,7 +2354,7 @@ function renderAdminZones() {
     if (deliveryZones.length === 0) {
         list.innerHTML = `<div class="p-8 text-center text-slate-500 text-xs border border-dashed border-slate-800 rounded-2xl">
                     <i class="fa-solid fa-map-location-dot text-2xl text-slate-700 mb-2 block"></i>
-                    Nenhum bairro cadastrado ainda. Use o formulário acima para adicionar o primeiro.
+                    Nenhuma opção de entrega cadastrada ainda. Use o formulário acima para adicionar a primeira.
                 </div>`;
         return;
     }
@@ -2362,7 +2362,7 @@ function renderAdminZones() {
     list.innerHTML = deliveryZones.map(zone => `
                 <div class="bg-japa-card p-3.5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center gap-3">
                     <div class="flex-1 min-w-0">
-                        <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Bairro</label>
+                        <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Opção de entrega</label>
                         <input type="text" value="${esc(zone.name)}" onchange="updateZoneName('${zone.id}', this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-white focus:border-japa-red focus:outline-none">
                     </div>
                     <div class="w-full sm:w-36">
@@ -2373,7 +2373,7 @@ function renderAdminZones() {
                         </div>
                     </div>
                     <div class="flex sm:flex-col gap-2 sm:pt-4">
-                        <button onclick="removeZone('${zone.id}')" class="flex-1 px-3.5 py-2 rounded-xl bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs font-bold transition-all" title="Excluir bairro">
+                        <button onclick="removeZone('${zone.id}')" class="flex-1 px-3.5 py-2 rounded-xl bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs font-bold transition-all" title="Excluir opção de entrega">
                             <i class="fa-solid fa-trash-can mr-1"></i> Excluir
                         </button>
                     </div>
@@ -2388,10 +2388,10 @@ function addDeliveryZone() {
     const name = (nameEl ? nameEl.value : '').trim();
     const fee = parseFloat(feeEl ? feeEl.value : '');
 
-    if (!name) { alert('Informe o nome do bairro.'); return; }
-    if (isNaN(fee) || fee < 0) { alert('Informe o valor da taxa de entrega deste bairro.'); return; }
+    if (!name) { alert('Informe o nome da opção de entrega.'); return; }
+    if (isNaN(fee) || fee < 0) { alert('Informe o valor da taxa de entrega desta opção.'); return; }
     if (deliveryZones.some(z => z.name.toLowerCase() === name.toLowerCase())) {
-        alert('Este bairro já está cadastrado.');
+        alert('Esta opção de entrega já está cadastrada.');
         return;
     }
 
@@ -2441,7 +2441,7 @@ function removeZone(id) {
     if (!isAdminLoggedIn) return;
     const zone = deliveryZones.find(z => z.id === id);
     if (!zone) return;
-    if (!confirm(`Remover "${zone.name}" da lista de bairros atendidos?`)) return;
+    if (!confirm(`Remover "${zone.name}" da lista de opções de entrega?`)) return;
     deliveryZones = deliveryZones.filter(z => z.id !== id);
     saveState();
     renderAdminZones();
@@ -2760,7 +2760,7 @@ function sendQuickWhatsAppConfirmation() {
     const orderDetails = prompt('Digite o resumo do pedido a confirmar:', '1x Combinado House Salmão Premium');
     if (!orderDetails) return;
 
-    const msg = `🍱 *JAPA'S HOUSE BISTRÔ* 🍱\n\nOlá! Seu pedido foi *CONFIRMADO* e já está em preparo pela nossa equipe!\n\n📋 *Resumo:* ${orderDetails}\n🛵 *Taxa de Entrega:* conforme o bairro\n\nObrigado pela preferência!`;
+    const msg = `🍱 *JAPA'S HOUSE BISTRÔ* 🍱\n\nOlá! Seu pedido foi *CONFIRMADO* e já está em preparo pela nossa equipe!\n\n📋 *Resumo:* ${orderDetails}\n🛵 *Taxa de Entrega:* conforme a opção escolhida\n\nObrigado pela preferência!`;
     window.open(`https://wa.me/55${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
@@ -2982,7 +2982,7 @@ function openDishModal(id) {
                     <div class="modal-img"><img src="${esc(dish.img)}" alt="${esc(dish.name)}" onerror="this.onerror=null;this.src='imagens/placeholder-prato.svg'"></div>
                     <h3 class="modal-title">${esc(dish.name)}</h3>
                     <div class="modal-kanji">${esc(dish.badge || dish.category)}</div>
-                    <div class="modal-pieces">Entrega: conforme o bairro (no carrinho)</div>
+                    <div class="modal-pieces">Entrega: conforme a opção escolhida (no carrinho)</div>
                     <p class="modal-desc">${esc(dish.desc)}</p>
                     <div class="modal-price">R$ ${safePrice.toFixed(2).replace('.', ',')}</div>
                     <button class="add-btn" onclick="addDishToCart(${dish.id})">ADICIONAR À COMANDA</button>
@@ -3129,71 +3129,71 @@ function renderCart() {
     updateCartTotals();
 }
 
-// Renderiza o campo "Bairro" do carrinho a partir das zonas cadastradas pelo admin
+// Renderiza o campo de entrega do carrinho a partir das opções cadastradas
+// pelo admin (retirada no local, dentro da cidade e outras).
 function renderDistrictField() {
     const box = document.getElementById('districtField');
     if (!box) return;
 
     const current = document.getElementById('cartDistrict');
     const previous = current ? current.value : '';
-    const label = '<label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Bairro *</label>';
+    const label = '<label class="block text-[10px] font-bold text-slate-300 uppercase tracking-wider mb-1">Como prefere receber? *</label>';
     const inputClass = 'w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:border-japa-red focus:outline-none';
 
-    // Sem zonas cadastradas: campo de texto livre (entrega fica a combinar)
-    if (deliveryZones.length === 0) {
-        const value = (previous && previous !== '__outro__') ? previous : '';
-        box.innerHTML = label +
-            `<input type="text" id="cartDistrict" required value="${esc(value)}" placeholder="Vila Velha" class="${inputClass}" oninput="updateCartTotals()">`;
-        return;
-    }
+    // Sem opções cadastradas: retirada no local (grátis) como padrão
+    const opcoes = deliveryZones.length
+        ? deliveryZones
+        : [{ id: 'padrao', name: 'Retirar no local', fee: 0 }];
 
-    const otherSelected = previous === '__outro__';
-    const placeholderSelected = (!previous || (!otherSelected && !deliveryZones.some(z => z.name === previous))) ? ' selected' : '';
+    const selected = previous && opcoes.some(z => z.name === previous) ? previous : '';
 
-    const options = deliveryZones.map(zone => {
+    const html = opcoes.map(zone => {
         const fee = Number(zone.fee) || 0;
         const feeLabel = fee === 0 ? 'GRÁTIS' : `R$ ${fee.toFixed(2)}`;
-        const selected = previous === zone.name ? ' selected' : '';
-        return `<option value="${esc(zone.name)}" data-fee="${fee}"${selected}>${esc(zone.name)} — ${feeLabel}</option>`;
+        const sel = selected === zone.name ? ' selected' : '';
+        return `<option value="${esc(zone.name)}" data-fee="${fee}"${sel}>${esc(zone.name)} — ${feeLabel}</option>`;
     }).join('');
 
     box.innerHTML = label + `
                 <select id="cartDistrict" required class="${inputClass}" onchange="onDistrictChange()">
-                    <option value="" disabled${placeholderSelected}>Selecione seu bairro</option>
-                    ${options}
-                    <option value="__outro__"${otherSelected ? ' selected' : ''}>Outro bairro — entrega a combinar</option>
-                </select>
-                <input type="text" id="cartDistrictOther" class="${inputClass} mt-2${otherSelected ? '' : ' hidden'}" placeholder="Digite o nome do bairro" ${otherSelected ? 'required' : ''} oninput="updateCartTotals()">`;
+                    ${selected ? '' : '<option value="" selected disabled>Escolha como prefere receber</option>'}
+                    ${html}
+                </select>`;
 
     onDistrictChange();
 }
 
+// "Retirar no local" (e afins) = o cliente busca no balcão: endereço é opcional
+function ehOpcaoRetirada(nome) {
+    return /retir|balc[ãa]o|presencial/i.test(String(nome || ''));
+}
+
 function onDistrictChange() {
     const sel = document.getElementById('cartDistrict');
-    const other = document.getElementById('cartDistrictOther');
-    if (sel && other) {
-        const isOther = sel.value === '__outro__';
-        other.classList.toggle('hidden', !isOther);
-        other.required = isOther;
-        if (!isOther) other.value = '';
-    }
+    const ehRetirada = ehOpcaoRetirada(sel ? sel.value : '');
+
+    const endereco = document.getElementById('cartAddress');
+    const rotulo = document.getElementById('cartAddressLabel');
+    const aviso = document.getElementById('cartRetiradaAviso');
+
+    if (endereco) endereco.required = !ehRetirada;
+    if (rotulo) rotulo.innerHTML = ehRetirada
+        ? 'Rua e Número <span class="text-slate-500 normal-case font-normal">(opcional — retirada no local)</span>'
+        : 'Rua e Número *';
+    if (aviso) aviso.classList.toggle('hidden', !ehRetirada);
+
     updateCartTotals();
 }
 
 function getDistrictValue() {
     const sel = document.getElementById('cartDistrict');
-    if (!sel) return '';
-    if (sel.value === '__outro__') {
-        const other = document.getElementById('cartDistrictOther');
-        return other ? other.value.trim() : '';
-    }
-    return sel.value;
+    return sel ? sel.value : '';
 }
 
-// Sem taxa padrão: só valem as taxas cadastradas por bairro
+// A taxa é sempre a da opção escolhida (cadastrada pelo gerente)
 function getCartFeeInfo() {
     const sel = document.getElementById('cartDistrict');
-    if (sel && sel.tagName === 'SELECT' && sel.value && sel.value !== '__outro__') {
+    if (sel && sel.tagName === 'SELECT' && sel.value) {
         const opt = sel.options[sel.selectedIndex];
         const fee = parseFloat(opt ? opt.getAttribute('data-fee') : NaN);
         if (!isNaN(fee)) {
@@ -3201,7 +3201,7 @@ function getCartFeeInfo() {
             return { fee: value, label: value === 0 ? 'GRÁTIS' : `R$ ${value.toFixed(2)}` };
         }
     }
-    return { fee: 0, label: 'A combinar' };
+    return { fee: 0, label: 'GRÁTIS' };
 }
 
 // Rótulo da taxa exibido no painel do gerente e na comanda
@@ -3224,7 +3224,7 @@ function updateCartTotals() {
     const btnEl = document.getElementById('cartCheckoutBtn');
 
     const sel = document.getElementById('cartDistrict');
-    const zoneName = (sel && sel.tagName === 'SELECT' && sel.value && sel.value !== '__outro__') ? sel.value : '';
+    const zoneName = (sel && sel.tagName === 'SELECT' && sel.value) ? sel.value : '';
 
     if (subEl) subEl.innerText = `R$ ${subtotal.toFixed(2)}`;
     if (feeEl) feeEl.innerText = feeInfo.label;
@@ -4071,7 +4071,7 @@ function renderKitchenZones() {
     if (deliveryZones.length === 0) {
         list.innerHTML = `<div class="p-8 text-center text-slate-500 text-xs border border-dashed border-slate-800 rounded-2xl">
                     <i class="fa-solid fa-map-location-dot text-2xl text-slate-700 mb-2 block"></i>
-                    Nenhum bairro cadastrado ainda.
+                    Nenhuma opção de entrega cadastrada ainda.
                 </div>`;
         return;
     }
@@ -4079,7 +4079,7 @@ function renderKitchenZones() {
     list.innerHTML = deliveryZones.map(zone => `
                 <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center gap-3">
                     <div class="flex-1 min-w-0">
-                        <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Bairro</label>
+                        <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Opção de entrega</label>
                         <input type="text" value="${esc(zone.name)}" onchange="updateZoneName('${zone.id}', this.value)"
                             class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-white focus:border-japa-red focus:outline-none">
                     </div>
@@ -4109,10 +4109,10 @@ function addKitchenDeliveryZone() {
     const name = (nameEl ? nameEl.value : '').trim();
     const fee = parseFloat(feeEl ? feeEl.value : '');
 
-    if (!name) { alert('Informe o nome do bairro.'); return; }
-    if (isNaN(fee) || fee < 0) { alert('Informe o valor da taxa de entrega deste bairro.'); return; }
+    if (!name) { alert('Informe o nome da opção de entrega.'); return; }
+    if (isNaN(fee) || fee < 0) { alert('Informe o valor da taxa de entrega desta opção.'); return; }
     if (deliveryZones.some(z => z.name.toLowerCase() === name.toLowerCase())) {
-        alert('Este bairro já está cadastrado.');
+        alert('Esta opção de entrega já está cadastrada.');
         return;
     }
 

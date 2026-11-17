@@ -396,7 +396,7 @@ function seedDefaults() {
       insZona.run('zseed' + Date.now().toString(36) + i, nome, Math.max(0, Number(z.fee) || 0), i);
       criadas++;
     });
-    if (criadas) console.log('✅ Seed bairros: ' + criadas + ' bairro(s) do config.js.');
+    if (criadas) console.log('✅ Seed opções de entrega: ' + criadas + ' opção(ões) do config.js.');
   }
 
   // Variações com preço próprio: Temaki Customizado (proteína + estilo).

@@ -77,6 +77,13 @@ router.post('/', limitePedido, (req, res) => {
   if (!calc.linhas.length) {
     return res.status(400).json({ error: 'Nenhum item válido no pedido.' });
   }
+  // A opção de entrega precisa existir na lista cadastrada pelo gerente.
+  // Sem isso, o cliente poderia digitar qualquer taxa (ou nenhuma).
+  if (calc.opcaoInvalida) {
+    return res.status(400).json({
+      error: 'Escolha uma opção de entrega válida (retirada no local ou delivery).'
+    });
+  }
   if (calc.desconhecidos.length) {
     return res.status(400).json({ error: `Item fora do cardápio: ${calc.desconhecidos.join(', ')}.` });
   }
