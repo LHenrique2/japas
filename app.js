@@ -2956,11 +2956,10 @@ function selectTemakiOption(type, optionKey, price) {
 }
 
 function orderCustomTemaki() {
-    // Pedido somente pelo site: o temaki vai para o carrinho e o cliente
-    // finaliza lá (vai para o painel do gerente e para a cozinha).
+    // Pedido somente pelo site: o temaki vai para o carrinho (que já abre
+    // sozinho) e o cliente finaliza lá.
     addTemakiToCart();
     showToast('Temaki customizado adicionado ao carrinho!');
-    openCart();
 }
 
 function openDishModal(id) {
@@ -2998,13 +2997,12 @@ function submitDishOrder(id) {
     const dish = dishData.find(d => d.id === id);
     if (!dish) return;
 
-    // Pedido somente pelo site: vai para o carrinho e o cliente finaliza lá
-    addToCart({ key: 'dish-' + dish.id, name: dish.name, price: Number(dish.price) || 0 });
-
+    // Pedido somente pelo site: o item vai para o carrinho (que já abre
+    // sozinho) e o cliente finaliza ali.
     const activeModal = document.getElementById('activeDishModal');
     if (activeModal) activeModal.remove();
+    addToCart({ key: 'dish-' + dish.id, name: dish.name, price: Number(dish.price) || 0 });
     showToast(`${dish.name} adicionado à comanda!`);
-    openCart();
 }
 
 function handleReservationSubmit(e) {
