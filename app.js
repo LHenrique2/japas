@@ -2956,10 +2956,11 @@ function selectTemakiOption(type, optionKey, price) {
 }
 
 function orderCustomTemaki() {
-    // Pedido somente pelo site: o temaki vai para o carrinho (que já abre
-    // sozinho) e o cliente finaliza lá.
+    // Pedido somente pelo site: o temaki vai para o carrinho e o cliente
+    // finaliza lá (vai para o painel do gerente e para a cozinha).
     addTemakiToCart();
-    showToast('Temaki customizado adicionado ao carrinho!');
+    openCart();
+    showToast('Temaki customizado adicionado à comanda!');
 }
 
 function openDishModal(id) {
@@ -3002,6 +3003,7 @@ function submitDishOrder(id) {
     const activeModal = document.getElementById('activeDishModal');
     if (activeModal) activeModal.remove();
     addToCart({ key: 'dish-' + dish.id, name: dish.name, price: Number(dish.price) || 0 });
+    openCart();
     showToast(`${dish.name} adicionado à comanda!`);
 }
 
@@ -3046,6 +3048,9 @@ function updateCartBadge() {
     badge.classList.toggle('hidden', count === 0);
 }
 
+// Adiciona um item na comanda (carrinho).
+// NÃO abre o carrinho: quem chama decide. Assim o cliente pode montar a
+// comanda inteira e só depois ir para o carrinho fechar o pedido.
 function addToCart(item) {
     const existing = cart.find(c => c.key === item.key);
     if (existing) {
@@ -3055,7 +3060,6 @@ function addToCart(item) {
     }
     saveState();
     updateCartBadge();
-    openCart();
 }
 
 function addDishToCart(id) {
@@ -3074,6 +3078,7 @@ function addTemakiToCart() {
         name: `Temaki Customizado (${selectedProteinaName} - ${selectedEstiloName})`,
         price: price
     });
+    showToast('Temaki customizado adicionado à comanda!');
 }
 
 function changeCartQty(index, delta) {
