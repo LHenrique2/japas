@@ -2986,7 +2986,7 @@ function openDishModal(id) {
                     <p class="modal-desc">${esc(dish.desc)}</p>
                     <div class="modal-price">R$ ${safePrice.toFixed(2).replace('.', ',')}</div>
                     <button class="add-btn" onclick="addDishToCart(${dish.id})">ADICIONAR À COMANDA</button>
-                    <button class="add-btn-alt" onclick="submitDishOrder(${dish.id})">pedir agora pelo site</button>
+                    <button class="add-btn-alt" onclick="submitDishOrder(${dish.id})">ir para o carrinho</button>
                 </div>
             `;
     // Fecha ao clicar fora do card
