@@ -24,16 +24,6 @@ router.get('/', (req, res) => {
   res.json(getConfig());
 });
 
-// Admin — atualiza uma seção inteira (business, delivery, site, whatsapp, admin)
-router.put('/:key', authMiddleware, (req, res) => {
-  const key = req.params.key;
-  if (!EDITABLE_KEYS.includes(key)) {
-    return res.status(400).json({ error: 'Chave de configuração inválida.' });
-  }
-  db.prepare('INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)').run(key, JSON.stringify(req.body));
-  res.json({ ok: true });
-});
-
 // ── Status da loja (pausa manual do painel cozinha) ────────────────────────
 // Público — qualquer um pode ver (o site precisa saber se está aberto)
 router.get('/store-status', (req, res) => {
@@ -42,12 +32,24 @@ router.get('/store-status', (req, res) => {
 });
 
 // Admin — define 'auto' | 'aberto' | 'fechado'
+// ATENÇÃO: esta rota vem ANTES da rota genérica '/:key' — se viesse depois,
+// o Express casaria '/store-status' com '/:key' e devolveria 400 sempre.
 router.put('/store-status', authMiddleware, (req, res) => {
   const status = req.body?.status;
   if (!['auto', 'aberto', 'fechado'].includes(status)) {
     return res.status(400).json({ error: 'Status inválido.' });
   }
   db.prepare("UPDATE store_status SET status = ?, updated_at = datetime('now') WHERE id = 1").run(status);
+  res.json({ ok: true });
+});
+
+// Admin — atualiza uma seção inteira (business, delivery, site, whatsapp, admin)
+router.put('/:key', authMiddleware, (req, res) => {
+  const key = req.params.key;
+  if (!EDITABLE_KEYS.includes(key)) {
+    return res.status(400).json({ error: 'Chave de configuração inválida.' });
+  }
+  db.prepare('INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)').run(key, JSON.stringify(req.body));
   res.json({ ok: true });
 });
 

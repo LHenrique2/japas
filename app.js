@@ -1182,6 +1182,9 @@ function handleAdminLogin(e) {
                 // O servidor passa a ser a fonte da verdade dos pedidos
                 sincronizarPedidos();
                 atualizarComandasCozinha();
+                // ...e do cardápio e dos bairros editados pelo gerente
+                apiCarregarCardapio();
+                apiCarregarZonas();
             } else {
                 adminToken = null;
                 adminFailedAttempts += 1;
@@ -1315,6 +1318,180 @@ function switchAdminTab(tab) {
 
 function apiCabecalhoAuth() {
     return adminToken ? { 'Authorization': 'Bearer ' + adminToken } : {};
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  CARDÁPIO E BAIRROS ↔ SERVIDOR
+// ═══════════════════════════════════════════════════════════════════════
+//  O que o gerente edita no painel (bairros, taxas, produtos, preços) é
+//  gravado no servidor. Antes isso ficava só no navegador de quem editou:
+//  o outro aparelho não via, o cliente não via e tudo se perdia no
+//  primeiro reinício do servidor. Agora o servidor é a fonte da verdade e
+//  o localStorage continua só como cache (o site abre mesmo sem API).
+
+// Avisa quando a alteração ficou só neste navegador (API fora do ar)
+function avisoSalvoSoAqui(oque, erro) {
+    const detalhe = (erro && erro.message) ? ' (' + erro.message + ')' : '';
+    showToast(oque + ' salvo só neste navegador — não foi para o servidor' + detalhe);
+}
+
+async function apiCarregarZonas() {
+    try {
+        const r = await fetch(apiUrl('/api/zones'));
+        if (!r.ok) return false;
+        const lista = await r.json();
+        if (!Array.isArray(lista)) return false;
+        deliveryZones = lista.map(z => ({
+            id: z.id,
+            name: z.name,
+            fee: Number(z.fee) || 0
+        }));
+        saveState();
+        renderAdminZones();
+        renderKitchenZones();
+        renderDistrictField();
+        updateCartTotals();
+        return true;
+    } catch (e) { return false; }
+}
+
+async function apiCarregarCardapio() {
+    try {
+        const r = await fetch(apiUrl('/api/menu'));
+        if (!r.ok) return false;
+        const itens = await r.json();
+        if (!Array.isArray(itens) || !itens.length) return false;
+        dishData = itens.map(d => Object.assign({}, d, { price: Number(d.price) || 0 }));
+        saveState();
+        renderMenuTabs();
+        renderMenuList();
+        if (isAdminLoggedIn) renderAdminProducts();
+        return true;
+    } catch (e) { return false; }
+}
+
+async function apiCriarZona(zona) {
+    try {
+        const r = await fetch(apiUrl('/api/zones'), {
+            method: 'POST',
+            headers: Object.assign({ 'Content-Type': 'application/json' }, apiCabecalhoAuth()),
+            body: JSON.stringify({ name: zona.name, fee: zona.fee })
+        });
+        if (!r.ok) {
+            const d = await r.json().catch(() => ({}));
+            throw new Error(d.error || ('HTTP ' + r.status));
+        }
+        const d = await r.json();
+        if (d && d.id) { zona.id = d.id; saveState(); }
+        return true;
+    } catch (e) {
+        avisoSalvoSoAqui('Bairro', e);
+        return false;
+    }
+}
+
+async function apiAtualizarZona(id, campos) {
+    try {
+        const r = await fetch(apiUrl('/api/zones/' + encodeURIComponent(id)), {
+            method: 'PUT',
+            headers: Object.assign({ 'Content-Type': 'application/json' }, apiCabecalhoAuth()),
+            body: JSON.stringify(campos)
+        });
+        if (!r.ok) {
+            const d = await r.json().catch(() => ({}));
+            throw new Error(d.error || ('HTTP ' + r.status));
+        }
+        return true;
+    } catch (e) {
+        avisoSalvoSoAqui('Bairro', e);
+        return false;
+    }
+}
+
+async function apiExcluirZona(id) {
+    try {
+        const r = await fetch(apiUrl('/api/zones/' + encodeURIComponent(id)), {
+            method: 'DELETE',
+            headers: apiCabecalhoAuth()
+        });
+        if (!r.ok) {
+            const d = await r.json().catch(() => ({}));
+            throw new Error(d.error || ('HTTP ' + r.status));
+        }
+        return true;
+    } catch (e) {
+        avisoSalvoSoAqui('Bairro', e);
+        return false;
+    }
+}
+
+async function apiSalvarProduto(produto, ehNovo) {
+    try {
+        const corpo = {
+            name: produto.name,
+            category: produto.category,
+            price: produto.price,
+            badge: produto.badge,
+            img: produto.img,
+            desc: produto.desc
+        };
+        const r = ehNovo
+            ? await fetch(apiUrl('/api/menu'), {
+                method: 'POST',
+                headers: Object.assign({ 'Content-Type': 'application/json' }, apiCabecalhoAuth()),
+                body: JSON.stringify(corpo)
+            })
+            : await fetch(apiUrl('/api/menu/' + produto.id), {
+                method: 'PUT',
+                headers: Object.assign({ 'Content-Type': 'application/json' }, apiCabecalhoAuth()),
+                body: JSON.stringify(corpo)
+            });
+        if (!r.ok) {
+            const d = await r.json().catch(() => ({}));
+            throw new Error(d.error || ('HTTP ' + r.status));
+        }
+        const d = await r.json().catch(() => ({}));
+        if (ehNovo && d && d.id) { produto.id = d.id; saveState(); }
+        return true;
+    } catch (e) {
+        avisoSalvoSoAqui('Produto', e);
+        return false;
+    }
+}
+
+async function apiAtualizarProduto(id, campos) {
+    try {
+        const r = await fetch(apiUrl('/api/menu/' + id), {
+            method: 'PUT',
+            headers: Object.assign({ 'Content-Type': 'application/json' }, apiCabecalhoAuth()),
+            body: JSON.stringify(campos)
+        });
+        if (!r.ok) {
+            const d = await r.json().catch(() => ({}));
+            throw new Error(d.error || ('HTTP ' + r.status));
+        }
+        return true;
+    } catch (e) {
+        avisoSalvoSoAqui('Produto', e);
+        return false;
+    }
+}
+
+async function apiExcluirProduto(id) {
+    try {
+        const r = await fetch(apiUrl('/api/menu/' + id), {
+            method: 'DELETE',
+            headers: apiCabecalhoAuth()
+        });
+        if (!r.ok) {
+            const d = await r.json().catch(() => ({}));
+            throw new Error(d.error || ('HTTP ' + r.status));
+        }
+        return true;
+    } catch (e) {
+        avisoSalvoSoAqui('Produto', e);
+        return false;
+    }
 }
 
 function sessaoPainelExpirada() {
@@ -2231,6 +2408,9 @@ function addDeliveryZone() {
     renderAdminZones();
     renderDistrictField();
     updateCartTotals();
+
+    // Grava no servidor (fonte da verdade) — o ID definitivo vem de lá
+    apiCriarZona(deliveryZones[deliveryZones.length - 1]);
 }
 
 function updateZoneFee(id, value) {
@@ -2241,6 +2421,7 @@ function updateZoneFee(id, value) {
     saveState();
     renderDistrictField();
     updateCartTotals();
+    apiAtualizarZona(id, { fee: zone.fee });
 }
 
 function updateZoneName(id, value) {
@@ -2253,6 +2434,7 @@ function updateZoneName(id, value) {
     saveState();
     renderAdminZones();
     renderDistrictField();
+    apiAtualizarZona(id, { name: newName });
 }
 
 function removeZone(id) {
@@ -2265,6 +2447,7 @@ function removeZone(id) {
     renderAdminZones();
     renderDistrictField();
     updateCartTotals();
+    apiExcluirZona(id);
 }
 
 function addNewOrderToAdmin(items, total, customer = {}) {
@@ -2648,6 +2831,7 @@ function updateProductPriceDirect(id, newPrice) {
     if (dish) {
         dish.price = parseFloat(newPrice) || dish.price;
         refreshPublicMenu();
+        apiAtualizarProduto(id, { price: dish.price });
     }
 }
 
@@ -2657,6 +2841,7 @@ function updateProductDescDirect(id, newDesc) {
     if (dish) {
         dish.desc = newDesc.trim();
         refreshPublicMenu();
+        apiAtualizarProduto(id, { desc: dish.desc });
     }
 }
 
@@ -2667,6 +2852,7 @@ function updateProductImgDirect(id, newImg) {
         dish.img = newImg.trim();
         refreshPublicMenu();
         renderAdminProducts();
+        apiAtualizarProduto(id, { img: dish.img });
     }
 }
 
@@ -2720,10 +2906,13 @@ function handleProductFormSubmit(e) {
             dish.badge = badge;
             dish.img = img;
             dish.desc = desc;
+            apiSalvarProduto(dish, false);
         }
     } else {
         const newId = dishData.length ? Math.max(...dishData.map(d => d.id)) + 1 : 1;
-        dishData.push({ id: newId, name, price, category, badge, img, desc });
+        const novo = { id: newId, name, price, category, badge, img, desc };
+        dishData.push(novo);
+        apiSalvarProduto(novo, true);
     }
 
     refreshPublicMenu();
@@ -2743,6 +2932,7 @@ function deleteProduct(id) {
         updateCartBadge();
         refreshPublicMenu();
         renderAdminProducts();
+        apiExcluirProduto(id);
     }
 }
 
@@ -2766,12 +2956,11 @@ function selectTemakiOption(type, optionKey, price) {
 }
 
 function orderCustomTemaki() {
-    const total = (Number(selectedProteinaPrice) || 0) + (Number(selectedEstiloPrice) || 0);
-    const itemDesc = `Temaki Customizado (${selectedProteinaName} - ${selectedEstiloName})`;
-    addNewOrderToAdmin(itemDesc, total, { deliveryFee: 0, deliveryFeeLabel: 'A combinar' });
-
-    const msg = `Olá! Gostaria de pedir um Temaki Customizado:\n- Proteína: ${selectedProteinaName}\n- Preparo: ${selectedEstiloName}\n- Taxa de Entrega: a combinar (conforme o bairro)\n- Total: R$ ${total.toFixed(2)}`;
-    window.open(`https://wa.me/${WA_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
+    // Pedido somente pelo site: o temaki vai para o carrinho e o cliente
+    // finaliza lá (vai para o painel do gerente e para a cozinha).
+    addTemakiToCart();
+    showToast('Temaki customizado adicionado ao carrinho!');
+    openCart();
 }
 
 function openDishModal(id) {
@@ -2797,7 +2986,7 @@ function openDishModal(id) {
                     <p class="modal-desc">${esc(dish.desc)}</p>
                     <div class="modal-price">R$ ${safePrice.toFixed(2).replace('.', ',')}</div>
                     <button class="add-btn" onclick="addDishToCart(${dish.id})">ADICIONAR À COMANDA</button>
-                    <button class="add-btn-alt" onclick="submitDishOrder(${dish.id})">ou pedir direto no WhatsApp</button>
+                    <button class="add-btn-alt" onclick="submitDishOrder(${dish.id})">pedir agora pelo site</button>
                 </div>
             `;
     // Fecha ao clicar fora do card
@@ -2808,14 +2997,14 @@ function openDishModal(id) {
 function submitDishOrder(id) {
     const dish = dishData.find(d => d.id === id);
     if (!dish) return;
-    const safePrice = Number(dish.price) || 0;
 
-    addNewOrderToAdmin(`1x ${dish.name}`, safePrice, { deliveryFee: 0, deliveryFeeLabel: 'A combinar' });
-    const msg = `Olá! Gostaria de pedir o prato: ${dish.name} (R$ ${safePrice.toFixed(2)})\nTaxa de Entrega: a combinar (conforme o bairro)`;
-    window.open(`https://wa.me/${WA_PHONE}?text=${encodeURIComponent(msg)}`, '_blank');
+    // Pedido somente pelo site: vai para o carrinho e o cliente finaliza lá
+    addToCart({ key: 'dish-' + dish.id, name: dish.name, price: Number(dish.price) || 0 });
 
     const activeModal = document.getElementById('activeDishModal');
     if (activeModal) activeModal.remove();
+    showToast(`${dish.name} adicionado à comanda!`);
+    openCart();
 }
 
 function handleReservationSubmit(e) {
@@ -3261,24 +3450,16 @@ function handleCheckout(e) {
         `${item.qty}x ${item.name} — R$ ${((Number(item.price) || 0) * (Number(item.qty) || 0)).toFixed(2)}`
     ).join('\n');
 
-    // Abre a janela do WhatsApp já no clique (o bloqueador de pop-up só libera assim).
-    // O endereço é preenchido depois, com o total que o servidor calculou.
-    const janelaZap = window.open('about:blank', '_blank');
+    // ── Pedido SOMENTE pelo site ──────────────────────────────────────────
+    // O pedido vai direto para o painel do gerente e para a cozinha.
+    // Se o servidor não responder, o cliente recebe o aviso e o carrinho
+    // continua intacto para tentar de novo — nada se perde.
+    const btn = document.getElementById('cartCheckoutBtn');
+    const btnTexto = document.getElementById('cartCheckoutBtnTexto');
+    const estadoBotao = btnTexto ? btnTexto.innerText : '';
+    if (btn) btn.disabled = true;
+    if (btnTexto) btnTexto.innerText = 'Enviando...';
 
-    const montarMensagem = (totalFinal) => `🍱 *JAPA'S HOUSE BISTRÔ* 🍱\n\n` +
-        `🛒 *NOVO PEDIDO PELO SITE*\n\n` +
-        `👤 *Cliente:* ${name}\n` +
-        `📱 *WhatsApp:* ${phone}\n\n` +
-        `📍 *Endereço de Entrega:*\n${fullAddress}\n\n` +
-        `📋 *Itens:*\n${itemsList}\n\n` +
-        `💰 Subtotal: R$ ${subtotal.toFixed(2)}\n` +
-        `🛵 Taxa de Entrega: ${feeInfo.label}\n` +
-        `*TOTAL: R$ ${totalFinal.toFixed(2)}*\n\n` +
-        `💳 *Pagamento:* ${payment}${(payment === 'Dinheiro' && changeFor) ? ` (troco para R$ ${Number(changeFor).toFixed(2)})` : ''}` +
-        (notes ? `\n📝 *Observações:* ${notes}` : '');
-
-    // Grava o pedido no servidor: o painel do gerente passa a listar o que
-    // chegou pelo site. O preço é recalculado lá — o site só sugere.
     fetch(apiUrl('/api/orders'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -3296,58 +3477,36 @@ function handleCheckout(e) {
     })
         .then(r => r.json().then(data => ({ ok: r.ok, data })))
         .then(({ ok, data }) => {
-            if (janelaZap) {
-                janelaZap.location.href = 'https://wa.me/' + WA_PHONE + '?text=' +
-                    encodeURIComponent(ok && data && data.total ? montarMensagem(Number(data.total)) : montarMensagem(total));
+            if (!ok) {
+                const msg = (data && data.error) ? data.error : 'Não foi possível enviar o pedido.';
+                showToast(msg + ' Seu carrinho continua salvo — tente novamente em instantes.');
+                return;
             }
-            if (ok) {
-                // Pedido gravado no servidor: não duplica no painel local
-                if (window._kitchenOrderHook) window._kitchenOrderHook(itemsList.replace(/\n/g, '  •  '), total, { name, phone });
-            } else {
-                // Servidor fora do ar: mantém o registro local e avisa
-                addNewOrderToAdmin(itemsList.replace(/\n/g, '  •  '), total, {
-                    name: name,
-                    phone: phone,
-                    address: fullAddress,
-                    payment: payment,
-                    deliveryFee: fee,
-                    deliveryFeeLabel: feeInfo.label,
-                    notes: notes,
-                    changeFor: changeFor
-                });
-                showToast('Não consegui registrar no painel, mas seu pedido foi enviado pelo WhatsApp.');
-            }
+
+            // Pedido gravado no servidor: aparece no painel do gerente e da cozinha
+            if (window._kitchenOrderHook) window._kitchenOrderHook(itemsList.replace(/\n/g, '  •  '), total, { name, phone });
+
+            showOrderConfirmation();
+
+            // Só agora limpa o carrinho (o pedido foi registrado com sucesso)
+            cart = [];
+            saveState();
+            updateCartBadge();
+
+            const form = document.getElementById('checkoutForm');
+            if (form) form.reset();
+            toggleChangeField();
+            renderDistrictField();
+            renderCart();
+            closeCart();
         })
         .catch(() => {
-            if (janelaZap) {
-                janelaZap.location.href = 'https://wa.me/' + WA_PHONE + '?text=' + encodeURIComponent(montarMensagem(total));
-            }
-            addNewOrderToAdmin(itemsList.replace(/\n/g, '  •  '), total, {
-                name: name,
-                phone: phone,
-                address: fullAddress,
-                payment: payment,
-                deliveryFee: fee,
-                deliveryFeeLabel: feeInfo.label,
-                notes: notes,
-                changeFor: changeFor
-            });
-            showToast('Sem conexão com o servidor. Enviamos seu pedido pelo WhatsApp.');
+            showToast('Sem conexão com o servidor — seu pedido não foi enviado. Tente novamente em instantes.');
+        })
+        .finally(() => {
+            if (btn) btn.disabled = (cart.length === 0);
+            if (btnTexto) btnTexto.innerText = estadoBotao || 'Fazer Pedido';
         });
-
-    showOrderConfirmation();
-
-    // Limpa o carrinho e o formulário
-    cart = [];
-    saveState();
-    updateCartBadge();
-
-    const form = document.getElementById('checkoutForm');
-    if (form) form.reset();
-    toggleChangeField();
-    renderDistrictField();
-    renderCart();
-    closeCart();
 }
 
 // ===== MENU MOBILE =====
@@ -3390,6 +3549,12 @@ document.addEventListener('DOMContentLoaded', () => {
     renderMenuList();
     initTabsDrag();
     updateOrderBadges();
+
+    // Servidor = fonte da verdade do cardápio e dos bairros de entrega.
+    // Se a API não responder (ex.: demo no GitHub Pages), o site segue com o
+    // que está no código e no cache do navegador.
+    apiCarregarCardapio();
+    apiCarregarZonas();
 
     // Roleta 3D (seção de navegação do index — não existe no cardapio.html)
     initRoleta3D();
@@ -3960,6 +4125,9 @@ function addKitchenDeliveryZone() {
     renderAdminZones();
     renderDistrictField();
     updateCartTotals();
+
+    // Grava no servidor (fonte da verdade)
+    apiCriarZona(deliveryZones[deliveryZones.length - 1]);
 }
 
 function playKitchenAlertSound() {

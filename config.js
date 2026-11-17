@@ -76,7 +76,23 @@ window.JAPA = {
     // bairros sem entrega (vazio = todos)
     excludedDistricts: [],
     // frase exibida no rodapé do carrinho
-    note: 'Entregamos na Vila Velha e região. Pedido mínimo de R$ 30,00. Frete grátis acima de R$ 80,00.'
+    note: 'Entregamos na Vila Velha e região. Pedido mínimo de R$ 30,00. Frete grátis acima de R$ 80,00.',
+
+    /* Bairros atendidos e taxa de entrega.
+     *
+     * Esta lista é a FONTE ÚNICA dos bairros: o servidor a usa para recriar
+     * o banco quando ele é zerado (ex.: disco efêmero do Render) e o site
+     * mostra os bairros para o cliente escolher no carrinho.
+     *
+     * O gerente também pode cadastrar e ajustar taxa pelo painel — o que
+     * ele mudar ali vale na hora e também pode ser copiado para cá.
+     *
+     * Exemplo:
+     *   zones: [
+     *     { name: 'Vila Velha', fee: 0 },
+     *     { name: 'Jardim Nova', fee: 8 }
+     *   ] */
+    zones: []
   },
 
   /* ---------------------------------------------------------------- *

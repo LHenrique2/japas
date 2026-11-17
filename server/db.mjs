@@ -354,6 +354,25 @@ function seedDefaults() {
     console.log('✅ Seed mesas: ' + mesas.length + ' mesas criadas (códigos exibidos no painel).');
   }
 
+  // Bairros de entrega: vêm do config.js (FONTE ÚNICA). Assim eles voltam
+  // sozinhos se o banco for recriado (ex.: disco efêmero do Render) e o
+  // gerente pode editar a taxa pelo painel em tempo de uso.
+  const zonasCount = db.prepare('SELECT COUNT(*) AS c FROM delivery_zones').get().c;
+  if (zonasCount === 0) {
+    const cfgZonas = lerConfigDoSite();
+    const zonas = (cfgZonas && cfgZonas.delivery && Array.isArray(cfgZonas.delivery.zones))
+      ? cfgZonas.delivery.zones : [];
+    let criadas = 0;
+    const insZona = db.prepare('INSERT INTO delivery_zones (id, name, fee, sort_order) VALUES (?, ?, ?, ?)');
+    zonas.forEach((z, i) => {
+      const nome = String((z && z.name) || '').trim();
+      if (!nome) return;
+      insZona.run('zseed' + Date.now().toString(36) + i, nome, Math.max(0, Number(z.fee) || 0), i);
+      criadas++;
+    });
+    if (criadas) console.log('✅ Seed bairros: ' + criadas + ' bairro(s) do config.js.');
+  }
+
   // Variações com preço próprio: Temaki Customizado (proteína + estilo).
   // O preço fica no servidor — o site nunca decide quanto custa.
   const variacoes = [
