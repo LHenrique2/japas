@@ -45,10 +45,12 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 
 Usuário: `admin` · Senha: a que estiver em `ADMIN_PASSWORD` no `.env`.
 
-- Em **produção** (`NODE_ENV=production`) o `ADMIN_PASSWORD` é **obrigatório**: sem ele o
-  servidor não sobe, e nunca existe um painel com senha padrão conhecida.
-- Em desenvolvimento, sem `ADMIN_PASSWORD`, o admin é criado com a senha `1234`
-  (com aviso no console). Troque pelo botão "Senha" do painel.
+- O servidor **sempre sobe** — nunca trava a publicação por falta de variável.
+- Com `ADMIN_PASSWORD` definida: o admin é criado com essa senha.
+- Sem ela, em produção: o servidor gera uma **senha forte** e mostra no log
+  ("🔑 senha: ..."). Definir a variável deixa a senha fixa entre reinícios.
+- Em desenvolvimento, sem a variável, o admin nasce com a senha `1234`.
+  Troque pelo botão "Senha" do painel.
 
 ### Estrutura
 

@@ -8,6 +8,7 @@
 
 import Database from 'better-sqlite3';
 import bcrypt from 'bcryptjs';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -231,35 +232,60 @@ function lerConfigDoSite() {
 }
 
 // ── Seed de admin, config e status da loja ─────────────────────────────────
+function gerarSenhaAleatoria(tam = 16) {
+    const alfabeto = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+    const simbolos = '!@#$%&*?';
+    const chars = [...alfabeto];
+    for (let i = chars.length - 1; i > 0; i--) {
+        const j = crypto.randomInt(i + 1);
+        [chars[i], chars[j]] = [chars[j], chars[i]];
+    }
+    return chars.join('') + simbolos[crypto.randomInt(simbolos.length)];
+}
+
 function seedDefaults() {
-  // Admin do painel: a senha vem do .env (ADMIN_PASSWORD).
-  // Em produção ela é OBRIGATÓRIA — sem ela o servidor não sobe, para nunca
-  // existir um admin com senha conhecida por qualquer um.
-  // Em desenvolvimento, sem ADMIN_PASSWORD, cai para '1234' (com aviso).
+  // Admin do painel: a senha vem do ADMIN_PASSWORD (variável de ambiente).
+  //
+  // O servidor SEMPRE sobe — nunca sai com erro por falta de variável, para
+  // não travar a publicação. Mas também nunca existe senha conhecida:
+  //   • com ADMIN_PASSWORD  → usa a senha que você escolheu;
+  //   • sem ADMIN_PASSWORD em produção → gera uma senha forte e mostra no log;
+  //   • sem ADMIN_PASSWORD em desenvolvimento → '1234' (com aviso).
   const adminCount = db.prepare('SELECT COUNT(*) AS c FROM admin_users').get().c;
   if (adminCount === 0) {
     const production = process.env.NODE_ENV === 'production';
     const senhaAdmin = String(process.env.ADMIN_PASSWORD || '').trim();
 
-    if (!senhaAdmin && production) {
-      console.error("❌ ADMIN_PASSWORD não definido. Defina no .env (ou nas variáveis do host) a senha do painel antes de subir em produção.");
-      process.exit(1);
-    }
-
-    const senha = senhaAdmin || '1234';
-    if (!senhaAdmin) {
-      console.warn("⚠️  ADMIN_PASSWORD não definido: admin criado com a senha padrão '1234'. Troque no painel ou defina ADMIN_PASSWORD no .env.");
-    }
-    if (senha.length < 4) {
+    if (senhaAdmin && senhaAdmin.length < 4) {
       console.error('❌ ADMIN_PASSWORD precisa de pelo menos 4 caracteres.');
       process.exit(1);
     }
 
+    let senha = senhaAdmin;
+    let aviso = '';
+    if (!senha) {
+      if (production) {
+        senha = gerarSenhaAleatoria();
+        aviso = 'senha gerada automaticamente';
+      } else {
+        senha = '1234';
+        aviso = "senha padrão '1234' (apenas para desenvolvimento)";
+      }
+    }
+
     const hash = bcrypt.hashSync(senha, 10);
     db.prepare('INSERT INTO admin_users (username, password_hash) VALUES (?, ?)').run('admin', hash);
-    console.log(senhaAdmin
-      ? "✅ Seed admin: usuário 'admin' criado com a senha do ADMIN_PASSWORD."
-      : "✅ Seed admin: usuário 'admin' criado com senha '1234' (troque no painel).");
+
+    if (senhaAdmin) {
+      console.log("✅ Seed admin: usuário 'admin' criado com a senha do ADMIN_PASSWORD.");
+    } else if (production) {
+      console.warn('⚠️  ADMIN_PASSWORD não definido — o servidor sobe mesmo assim, com uma senha gerada agora:');
+      console.warn('   👤 usuário: admin');
+      console.warn('   🔑 senha:  ' + senha);
+      console.warn('   Defina ADMIN_PASSWORD no painel do Render para a senha não mudar a cada reinício.');
+    } else {
+      console.warn("⚠️  ADMIN_PASSWORD não definido: admin criado com a senha padrão '1234' (apenas em desenvolvimento).");
+    }
   }
 
   // Config do site: lida do config.js (FONTE ÚNICA) — o servidor não repete
